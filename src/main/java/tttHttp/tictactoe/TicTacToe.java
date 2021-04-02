@@ -1,5 +1,6 @@
 package tttHttp.tictactoe;
 
+import tttHttp.DTO.GameDTO;
 import tttHttp.models.Game;
 
 import java.util.List;
@@ -14,33 +15,34 @@ public class TicTacToe {
     private boolean surrendered;
     private int[][] board;
 
-    public TicTacToe(Game game){
-        turn = game.getTurn();
-        turnCounter = game.getTurnCounter();
-        winner = game.isWinner();
-        draw = game.isDraw();
-        surrendered = game.isSurrendered();
-        board = game.getBoard();
+    public TicTacToe(int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board) {
+        this.turn = turn;
+        this.turnCounter = turnCounter;
+        this.winner = winner;
+        this.draw = draw;
+        this.surrendered = surrendered;
+        this.board = board;
     }
 
     public boolean makeMove(int playerNumber, int tileCol, int tileRow){
+        if((playerNumber != turn) || !isValidMove(tileCol, tileRow) || isWinner() || isDraw() || isSurrendered()) return false;
         board[tileCol][tileRow] = turn;
         winner = checkWinner(tileCol, tileRow);
-        turn = (turn == 1? 2 : 1);
+        if(!winner) turn = (turn == 1? 2 : 1);
         turnCounter++;
-        draw = checkDraw();
+        if(!winner) draw = checkDraw();
         return true;
     }
 
     public boolean isValidMove(int tileCol, int tileRow){
-        if(tileCol > 2 || tileCol < 0) return false;
-        if(tileRow > 2 || tileRow < 0) return false;
+        if(tileCol >= board.length || tileCol < 0) return false;
+        if(tileRow >= board[0].length || tileRow < 0) return false;
         if(board[tileCol][tileRow] != 0) return false;
         return true;
     }
 
     private boolean checkDraw() {
-        return turnCounter > 9;
+        return turnCounter >= (board.length * board[0].length);
     }
 
     private boolean checkWinner(int tileCol, int tileRow) {
@@ -59,11 +61,11 @@ public class TicTacToe {
     }
 
     private boolean checkForwardDiagonalWinner(){
-        return board[0][0] == board[1][1] && board[0][0] == board[2][2];
+        return board[0][0] == board[1][1] && board[0][0] == board[2][2] && board[1][1] != 0;
     }
 
     private boolean checkBackwardDiagonalWinner() {
-        return board[0][2] == board[1][1] && board[0][2] == board[2][0];
+        return board[0][2] == board[1][1] && board[0][2] == board[2][0] && board[1][1] != 0;
     }
 
     public int getTurn() {
@@ -80,6 +82,14 @@ public class TicTacToe {
 
     public boolean isSurrendered() {
         return surrendered;
+    }
+
+    public void setSurrendered(boolean surrendered) {
+        this.surrendered = surrendered;
+    }
+
+    public GameDTO getGameDTO(){
+        return new GameDTO(turn, turnCounter, winner, draw, surrendered, board);
     }
 
 }
