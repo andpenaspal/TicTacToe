@@ -14,25 +14,10 @@ public class TicTacToeTests {
 
     private TicTacToe ttt;
 
-
     @BeforeEach
     void setUp() {
         ttt = new TicTacToe(2, 0, false, false, false, newBoard());
     }
-
-    /* TODO:
-    * Tests:
-    * - Make Move:
-    *   - Normal
-    *   - Winning (x4)
-    *   - Tables
-    * - Boundaries
-    * - Invalid turn
-    * - Override Tile
-    * - On Winner
-    * - On Draw
-    * - On Surrender
-    * */
 
     @Test
     @DisplayName("Make Move")
@@ -193,6 +178,7 @@ public class TicTacToeTests {
     @Test
     @DisplayName("No Move on Winner condition")
     void noMoveOnWinnerTest(){
+        //SetUp Win
         ttt.makeMove(2, 1,1);
         ttt.makeMove(1, 0,0);
         ttt.makeMove(2, 1,2);
@@ -205,6 +191,7 @@ public class TicTacToeTests {
     @Test
     @DisplayName("No Move on Draw")
     void noMoveOnDrawTest(){
+        //SetUp Draw
         ttt.makeMove(2, 0, 0);
         ttt.makeMove(1, 0, 1);
         ttt.makeMove(2, 0, 2);
@@ -229,7 +216,7 @@ public class TicTacToeTests {
         assertFalse(ttt.makeMove(1,1,1));
     }
 
-
+    //Helper Function
     private int[][] newBoard(){
         int[][] boardTemplate = new int[3][3];
         for(int i = 0; i < boardTemplate.length; i++){
