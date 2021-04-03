@@ -12,11 +12,12 @@ and Swagger documentation.
 #### Completed
 * TicTacToe Logic
 * Junit Tests for TicTacToe
-#### TODO
 * End Points
+* Controllers (Basic Behaviour)
+#### TODO
 * MySQL DataBase
 * DAOs
-* Controllers
+* Controllers (link to DDBB)
 * Custom Mapped Exceptions
 * RestAssured Testing
 * Swagger
