@@ -7,6 +7,7 @@ public class GameDTO {
     private int gameId;
     private int playerNumber;
     private String remotePlayerName;
+    private boolean gameStarted;
     private int turn;
     private int turnCounter;
     private boolean winner;
@@ -14,7 +15,8 @@ public class GameDTO {
     private boolean surrendered;
     private int[][] board;
 
-    public GameDTO(int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board) {
+    public GameDTO(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board) {
+        this.gameStarted = gameStarted;
         this.turn = turn;
         this.turnCounter = turnCounter;
         this.winner = winner;
@@ -47,28 +49,60 @@ public class GameDTO {
         this.remotePlayerName = remotePlayerName;
     }
 
+    public boolean isGameStarted() {
+        return gameStarted;
+    }
+
+    public void setGameStarted(boolean gameStarted) {
+        this.gameStarted = gameStarted;
+    }
+
     public int getTurn() {
         return turn;
+    }
+
+    public void setTurn(int turn) {
+        this.turn = turn;
     }
 
     public int getTurnCounter() {
         return turnCounter;
     }
 
+    public void setTurnCounter(int turnCounter) {
+        this.turnCounter = turnCounter;
+    }
+
     public boolean isWinner() {
         return winner;
+    }
+
+    public void setWinner(boolean winner) {
+        this.winner = winner;
     }
 
     public boolean isDraw() {
         return draw;
     }
 
+    public void setDraw(boolean draw) {
+        this.draw = draw;
+    }
+
     public boolean isSurrendered() {
         return surrendered;
     }
 
+    public void setSurrendered(boolean surrendered) {
+        this.surrendered = surrendered;
+    }
+
     public int[][] getBoard() {
         return board;
+    }
+
+    public void setBoard(int[][] board) {
+        this.board = board;
     }
 
     @Override
@@ -76,15 +110,13 @@ public class GameDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GameDTO gameDTO = (GameDTO) o;
-        return gameId == gameDTO.gameId && playerNumber == gameDTO.playerNumber && turn == gameDTO.turn && turnCounter == gameDTO.turnCounter
-                && winner == gameDTO.winner && draw == gameDTO.draw && surrendered == gameDTO.surrendered
-                && Objects.equals(remotePlayerName, gameDTO.remotePlayerName) && Arrays.deepEquals(board, gameDTO.board);
+        return gameId == gameDTO.gameId && playerNumber == gameDTO.playerNumber && gameStarted == gameDTO.gameStarted && turn == gameDTO.turn && turnCounter == gameDTO.turnCounter && winner == gameDTO.winner && draw == gameDTO.draw && surrendered == gameDTO.surrendered && Objects.equals(remotePlayerName, gameDTO.remotePlayerName) && Arrays.deepEquals(board, gameDTO.board);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(gameId, playerNumber, remotePlayerName, turn, turnCounter, winner, draw, surrendered);
-        result = 31 * result + Arrays.hashCode(board);
+        int result = Objects.hash(gameId, playerNumber, remotePlayerName, gameStarted, turn, turnCounter, winner, draw, surrendered);
+        result = 31 * result + Arrays.deepHashCode(board);
         return result;
     }
 }

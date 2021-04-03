@@ -1,9 +1,11 @@
 package org.example;
 
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 /**
  * Root resource (exposed at "myresource" path)
@@ -21,5 +23,11 @@ public class MyResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String getIt() {
         return "Got it! haha";
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response postIt(){
+        return Response.accepted().build();
     }
 }

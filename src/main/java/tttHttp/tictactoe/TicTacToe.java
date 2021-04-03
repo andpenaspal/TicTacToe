@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class TicTacToe {
+    private boolean gameStarted;
     private int turn;
     private int turnCounter;
     private boolean winner;
@@ -15,7 +16,8 @@ public class TicTacToe {
     private boolean surrendered;
     private int[][] board;
 
-    public TicTacToe(int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board) {
+    public TicTacToe(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board) {
+        this.gameStarted = gameStarted;
         this.turn = turn;
         this.turnCounter = turnCounter;
         this.winner = winner;
@@ -25,7 +27,7 @@ public class TicTacToe {
     }
 
     public boolean makeMove(int playerNumber, int tileCol, int tileRow){
-        if((playerNumber != turn) || !isValidMove(tileCol, tileRow) || isWinner() || isDraw() || isSurrendered()) return false;
+        if(!gameStarted || (playerNumber != turn) || !isValidMove(tileCol, tileRow) || isWinner() || isDraw() || isSurrendered()) return false;
         board[tileCol][tileRow] = turn;
         winner = checkWinner(tileCol, tileRow);
         if(!winner) turn = (turn == 1? 2 : 1);
@@ -89,7 +91,7 @@ public class TicTacToe {
     }
 
     public GameDTO getGameDTO(){
-        return new GameDTO(turn, turnCounter, winner, draw, surrendered, board);
+        return new GameDTO(gameStarted, turn, turnCounter, winner, draw, surrendered, board);
     }
 
 }

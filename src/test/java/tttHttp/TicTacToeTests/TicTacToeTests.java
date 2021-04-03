@@ -16,7 +16,7 @@ public class TicTacToeTests {
 
     @BeforeEach
     void setUp() {
-        ttt = new TicTacToe(2, 0, false, false, false, newBoard());
+        ttt = new TicTacToe(true,2, 0, false, false, false, newBoard());
     }
 
     @Test
@@ -25,7 +25,7 @@ public class TicTacToeTests {
         //Expected
         int[][] expectedBoard = newBoard();
         expectedBoard[0][1] = 2;
-        GameDTO expectedGameDTO = new GameDTO(1, 1, false, false, false, expectedBoard);
+        GameDTO expectedGameDTO = new GameDTO(true, 1, 1, false, false, false, expectedBoard);
 
         //Actual
         boolean actualMakeMoveReturn = ttt.makeMove(2, 0, 1);
@@ -50,7 +50,7 @@ public class TicTacToeTests {
             expectedBoard[1][2] = 2;
             expectedBoard[0][1] = 1;
             expectedBoard[2][2] = 2;
-            GameDTO expectedGameDTO = new GameDTO(2, 5, true, false, false, expectedBoard);
+            GameDTO expectedGameDTO = new GameDTO(true,2, 5, true, false, false, expectedBoard);
 
             //Actual
             ttt.makeMove(2, 0,2);
@@ -73,7 +73,7 @@ public class TicTacToeTests {
             expectedBoard[1][2] = 2;
             expectedBoard[0][1] = 1;
             expectedBoard[1][0] = 2;
-            GameDTO expectedGameDTO = new GameDTO(2, 5, true, false, false, expectedBoard);
+            GameDTO expectedGameDTO = new GameDTO(true, 2, 5, true, false, false, expectedBoard);
 
             //Actual
             ttt.makeMove(2, 1,1);
@@ -96,7 +96,7 @@ public class TicTacToeTests {
             expectedBoard[1][1] = 2;
             expectedBoard[0][1] = 1;
             expectedBoard[2][2] = 2;
-            GameDTO expectedGameDTO = new GameDTO(2, 5, true, false, false, expectedBoard);
+            GameDTO expectedGameDTO = new GameDTO(true, 2, 5, true, false, false, expectedBoard);
 
             //Actual
             ttt.makeMove(2, 0,0);
@@ -120,7 +120,7 @@ public class TicTacToeTests {
             expectedBoard[1][1] = 1;
             expectedBoard[2][2] = 2;
             expectedBoard[2][0] = 1;
-            GameDTO expectedGameDTO = new GameDTO(1, 6, true, false, false, expectedBoard);
+            GameDTO expectedGameDTO = new GameDTO(true, 1, 6, true, false, false, expectedBoard);
 
             //Actual
             ttt.makeMove(2, 0,0);
@@ -160,6 +160,13 @@ public class TicTacToeTests {
     @CsvSource({"-1,-1", "99, 99", "0, -1", "-1, 0", "99, 0", "0, 99"})
     void boardBoundariesTest(int tileCol, int tileRow){
         assertFalse(ttt.makeMove(2, tileCol, tileRow));
+    }
+
+    @Test
+    @DisplayName("No Move on Game Not Started")
+    void gameNoStartedTest(){
+        ttt = new TicTacToe(false, 0, 0, false, false, false, newBoard());
+        assertFalse(ttt.makeMove(1, 1, 1));
     }
 
     @Test
