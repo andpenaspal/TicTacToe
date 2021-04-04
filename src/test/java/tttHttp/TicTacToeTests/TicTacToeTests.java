@@ -6,9 +6,12 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import tttHttp.DTO.GameDTO;
+import tttHttp.models.Point;
 import tttHttp.tictactoe.TicTacToe;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class TicTacToeTests {
 
@@ -16,7 +19,7 @@ public class TicTacToeTests {
 
     @BeforeEach
     void setUp() {
-        ttt = new TicTacToe(true,2, 0, false, false, false, newBoard());
+        ttt = new TicTacToe(true,2, 0, false, false, false, newBoard(), new ArrayList<Point>());
     }
 
     @Test
@@ -25,7 +28,7 @@ public class TicTacToeTests {
         //Expected
         int[][] expectedBoard = newBoard();
         expectedBoard[0][1] = 2;
-        GameDTO expectedGameDTO = new GameDTO(true, 1, 1, false, false, false, expectedBoard);
+        GameDTO expectedGameDTO = new GameDTO(true, 1, 1, false, false, false, expectedBoard, new ArrayList<Point>());
 
         //Actual
         boolean actualMakeMoveReturn = ttt.makeMove(2, 0, 1);
@@ -50,7 +53,11 @@ public class TicTacToeTests {
             expectedBoard[1][2] = 2;
             expectedBoard[0][1] = 1;
             expectedBoard[2][2] = 2;
-            GameDTO expectedGameDTO = new GameDTO(true,2, 5, true, false, false, expectedBoard);
+            List<Point> winningCombination = new ArrayList<Point>();
+            winningCombination.add(new Point(0, 2));
+            winningCombination.add(new Point(1, 2));
+            winningCombination.add(new Point(2, 2));
+            GameDTO expectedGameDTO = new GameDTO(true,2, 5, true, false, false, expectedBoard, winningCombination);
 
             //Actual
             ttt.makeMove(2, 0,2);
@@ -73,7 +80,11 @@ public class TicTacToeTests {
             expectedBoard[1][2] = 2;
             expectedBoard[0][1] = 1;
             expectedBoard[1][0] = 2;
-            GameDTO expectedGameDTO = new GameDTO(true, 2, 5, true, false, false, expectedBoard);
+            List<Point> winningCombination = new ArrayList<Point>();
+            winningCombination.add(new Point(1, 1));
+            winningCombination.add(new Point(1, 2));
+            winningCombination.add(new Point(1, 0));
+            GameDTO expectedGameDTO = new GameDTO(true, 2, 5, true, false, false, expectedBoard, winningCombination);
 
             //Actual
             ttt.makeMove(2, 1,1);
@@ -96,7 +107,11 @@ public class TicTacToeTests {
             expectedBoard[1][1] = 2;
             expectedBoard[0][1] = 1;
             expectedBoard[2][2] = 2;
-            GameDTO expectedGameDTO = new GameDTO(true, 2, 5, true, false, false, expectedBoard);
+            List<Point> winningCombination = new ArrayList<Point>();
+            winningCombination.add(new Point(0, 0));
+            winningCombination.add(new Point(1, 1));
+            winningCombination.add(new Point(2, 2));
+            GameDTO expectedGameDTO = new GameDTO(true, 2, 5, true, false, false, expectedBoard, winningCombination);
 
             //Actual
             ttt.makeMove(2, 0,0);
@@ -120,7 +135,11 @@ public class TicTacToeTests {
             expectedBoard[1][1] = 1;
             expectedBoard[2][2] = 2;
             expectedBoard[2][0] = 1;
-            GameDTO expectedGameDTO = new GameDTO(true, 1, 6, true, false, false, expectedBoard);
+            List<Point> winningCombination = new ArrayList<Point>();
+            winningCombination.add(new Point(0, 2));
+            winningCombination.add(new Point(1, 1));
+            winningCombination.add(new Point(2, 0));
+            GameDTO expectedGameDTO = new GameDTO(true, 1, 6, true, false, false, expectedBoard, winningCombination);
 
             //Actual
             ttt.makeMove(2, 0,0);
@@ -165,7 +184,7 @@ public class TicTacToeTests {
     @Test
     @DisplayName("No Move on Game Not Started")
     void gameNoStartedTest(){
-        ttt = new TicTacToe(false, 0, 0, false, false, false, newBoard());
+        ttt = new TicTacToe(false, 0, 0, false, false, false, newBoard(), new ArrayList<Point>());
         assertFalse(ttt.makeMove(1, 1, 1));
     }
 

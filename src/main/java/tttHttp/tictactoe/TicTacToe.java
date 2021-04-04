@@ -2,6 +2,7 @@ package tttHttp.tictactoe;
 
 import tttHttp.DTO.GameDTO;
 import tttHttp.models.Game;
+import tttHttp.models.Point;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,8 +16,10 @@ public class TicTacToe {
     private boolean draw;
     private boolean surrendered;
     private int[][] board;
+    private List<Point> winningCombination;
 
-    public TicTacToe(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board) {
+    public TicTacToe(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board,
+                     List<Point> winningCombination) {
         this.gameStarted = gameStarted;
         this.turn = turn;
         this.turnCounter = turnCounter;
@@ -24,6 +27,7 @@ public class TicTacToe {
         this.draw = draw;
         this.surrendered = surrendered;
         this.board = board;
+        this.winningCombination = winningCombination;
     }
 
     public boolean makeMove(int playerNumber, int tileCol, int tileRow){
@@ -55,19 +59,43 @@ public class TicTacToe {
     }
 
     private boolean checkVerticalWinner(int tileCol){
-        return board[tileCol][0] == board[tileCol][1] && board[tileCol][0] == board[tileCol][2];
+        boolean isWin = board[tileCol][0] == board[tileCol][1] && board[tileCol][0] == board[tileCol][2];
+        if(isWin){
+            for(int i = 0; i < 3; i++){
+                winningCombination.add(new Point(tileCol, i));
+            }
+        }
+        return isWin;
     }
 
     private boolean checkHorizontalWinner(int tileRow){
-        return board[0][tileRow] == board[1][tileRow] && board[0][tileRow] == board[2][tileRow];
+        boolean isWin = board[0][tileRow] == board[1][tileRow] && board[0][tileRow] == board[2][tileRow];
+        if(isWin){
+            for(int i = 0; i < 3; i++){
+                winningCombination.add(new Point(i, tileRow));
+            }
+        }
+        return isWin;
     }
 
     private boolean checkForwardDiagonalWinner(){
-        return board[0][0] == board[1][1] && board[0][0] == board[2][2] && board[1][1] != 0;
+        boolean isWin = board[0][0] == board[1][1] && board[0][0] == board[2][2] && board[1][1] != 0;
+        if(isWin){
+            for(int i = 0; i < 3; i++){
+                winningCombination.add(new Point(i, i));
+            }
+        }
+        return isWin;
     }
 
     private boolean checkBackwardDiagonalWinner() {
-        return board[0][2] == board[1][1] && board[0][2] == board[2][0] && board[1][1] != 0;
+        boolean isWin = board[0][2] == board[1][1] && board[0][2] == board[2][0] && board[1][1] != 0;
+        if(isWin){
+            for(int i = 0; i < 3; i++){
+                winningCombination.add(new Point(i, 2-i));
+            }
+        }
+        return isWin;
     }
 
     public int getTurn() {
@@ -91,7 +119,7 @@ public class TicTacToe {
     }
 
     public GameDTO getGameDTO(){
-        return new GameDTO(gameStarted, turn, turnCounter, winner, draw, surrendered, board);
+        return new GameDTO(gameStarted, turn, turnCounter, winner, draw, surrendered, board, winningCombination);
     }
 
 }

@@ -7,6 +7,11 @@ public class Point {
     public Point() {
     }
 
+    public Point(int moveCol, int moveRow){
+        this.moveCol = moveCol;
+        this.moveRow = moveRow;
+    }
+
     public int getMoveCol() {
         return moveCol;
     }

@@ -3,6 +3,8 @@ package tttHttp.controllers;
 import tttHttp.DTO.GameDTO;
 import tttHttp.models.Point;
 
+import java.util.ArrayList;
+
 public class GameController {
 
     //TODO: Connection in IV
@@ -15,7 +17,7 @@ public class GameController {
         //TODO: check gameId is in the list of Games of the Player (Above) to check authorization
         //If so, get the game
         int[][] board = new int[3][3];
-        GameDTO game = new GameDTO(true, 2, 0, false, false, false, board);
+        GameDTO game = new GameDTO(true, 2, 0, false, false, false, board, new ArrayList<>());
         game.setGameId(9);
         game.setPlayerNumber(7);
         game.setRemotePlayerName("tu puta madre");
@@ -27,7 +29,7 @@ public class GameController {
         //PlayerController playerController = new PlayerController();
         //TODO: new game DDBB
         int[][] board = new int[3][3];
-        GameDTO game = new GameDTO(true, 2, 0, false, false, false, board);
+        GameDTO game = new GameDTO(true, 2, 0, false, false, false, board, new ArrayList<>());
         game.setGameId(9);
         game.setPlayerNumber(7);
         game.setRemotePlayerName("tu puta madre");

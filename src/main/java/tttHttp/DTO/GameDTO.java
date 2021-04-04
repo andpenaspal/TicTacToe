@@ -1,6 +1,9 @@
 package tttHttp.DTO;
 
+import tttHttp.models.Point;
+
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public class GameDTO {
@@ -14,8 +17,10 @@ public class GameDTO {
     private boolean draw;
     private boolean surrendered;
     private int[][] board;
+    private List<Point> winningCombination;
 
-    public GameDTO(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board) {
+    public GameDTO(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board,
+                   List<Point> winningCombination) {
         this.gameStarted = gameStarted;
         this.turn = turn;
         this.turnCounter = turnCounter;
@@ -23,6 +28,7 @@ public class GameDTO {
         this.draw = draw;
         this.surrendered = surrendered;
         this.board = board;
+        this.winningCombination = winningCombination;
     }
 
     public int getGameId() {
@@ -103,6 +109,14 @@ public class GameDTO {
 
     public void setBoard(int[][] board) {
         this.board = board;
+    }
+
+    public List<Point> getWinningCombination() {
+        return winningCombination;
+    }
+
+    public void setWinningCombination(List<Point> winningCombination) {
+        this.winningCombination = winningCombination;
     }
 
     @Override
