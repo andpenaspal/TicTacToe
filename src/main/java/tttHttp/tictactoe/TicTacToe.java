@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class TicTacToe {
+    private int player1Id;
+    private int player2Id;
     private boolean gameStarted;
     private int turn;
     private int turnCounter;
@@ -18,8 +20,12 @@ public class TicTacToe {
     private int[][] board;
     private List<Point> winningCombination;
 
-    public TicTacToe(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board,
+    public TicTacToe(int player1Id, int player2Id, boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw,
+                     boolean surrendered,
+                     int[][] board,
                      List<Point> winningCombination) {
+        this.player1Id = player1Id;
+        this.player2Id = player2Id;
         this.gameStarted = gameStarted;
         this.turn = turn;
         this.turnCounter = turnCounter;
@@ -30,11 +36,11 @@ public class TicTacToe {
         this.winningCombination = winningCombination;
     }
 
-    public boolean makeMove(int playerNumber, int tileCol, int tileRow){
-        if(!gameStarted || (playerNumber != turn) || !isValidMove(tileCol, tileRow) || isWinner() || isDraw() || isSurrendered()) return false;
+    public boolean makeMove(int playerId, int tileCol, int tileRow){
+        if(!gameStarted || (playerId != turn) || !isValidMove(tileCol, tileRow) || isWinner() || isDraw() || isSurrendered()) return false;
         board[tileCol][tileRow] = turn;
         winner = checkWinner(tileCol, tileRow);
-        if(!winner) turn = (turn == 1? 2 : 1);
+        if(!winner) turn = (turn == player1Id? player2Id : player1Id);
         turnCounter++;
         if(!winner) draw = checkDraw();
         return true;
@@ -118,7 +124,8 @@ public class TicTacToe {
         this.surrendered = surrendered;
     }
 
-    public GameDTO getGameDTO(){
+    public GameDTO getGameDTOBasicInfo(){
+
         return new GameDTO(gameStarted, turn, turnCounter, winner, draw, surrendered, board, winningCombination);
     }
 

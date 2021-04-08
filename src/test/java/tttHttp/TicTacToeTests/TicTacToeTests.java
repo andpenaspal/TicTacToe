@@ -19,7 +19,7 @@ public class TicTacToeTests {
 
     @BeforeEach
     void setUp() {
-        ttt = new TicTacToe(true,2, 0, false, false, false, newBoard(), new ArrayList<Point>());
+        ttt = new TicTacToe(1, 2, true,2, 0, false, false, false, newBoard(), new ArrayList<Point>());
     }
 
     @Test
@@ -32,7 +32,7 @@ public class TicTacToeTests {
 
         //Actual
         boolean actualMakeMoveReturn = ttt.makeMove(2, 0, 1);
-        GameDTO actualGameDTO = ttt.getGameDTO();
+        GameDTO actualGameDTO = ttt.getGameDTOBasicInfo();
 
         assertAll(
                 () -> assertTrue(actualMakeMoveReturn),
@@ -65,7 +65,7 @@ public class TicTacToeTests {
             ttt.makeMove(2, 1,2);
             ttt.makeMove(1, 0,1);
             ttt.makeMove(2, 2,2);
-            GameDTO actualGameDTO = ttt.getGameDTO();
+            GameDTO actualGameDTO = ttt.getGameDTOBasicInfo();
 
             assertEquals(expectedGameDTO, actualGameDTO);
         }
@@ -92,7 +92,7 @@ public class TicTacToeTests {
             ttt.makeMove(2, 1,2);
             ttt.makeMove(1, 0,1);
             ttt.makeMove(2, 1,0);
-            GameDTO actualGameDTO = ttt.getGameDTO();
+            GameDTO actualGameDTO = ttt.getGameDTOBasicInfo();
 
             assertEquals(expectedGameDTO, actualGameDTO);
         }
@@ -119,7 +119,7 @@ public class TicTacToeTests {
             ttt.makeMove(2, 1,1);
             ttt.makeMove(1, 0,1);
             ttt.makeMove(2, 2,2);
-            GameDTO actualGameDTO = ttt.getGameDTO();
+            GameDTO actualGameDTO = ttt.getGameDTOBasicInfo();
 
             assertEquals(expectedGameDTO, actualGameDTO);
         }
@@ -148,7 +148,7 @@ public class TicTacToeTests {
             ttt.makeMove(1, 1,1);
             ttt.makeMove(2, 2,2);
             ttt.makeMove(1, 2,0);
-            GameDTO actualGameDTO = ttt.getGameDTO();
+            GameDTO actualGameDTO = ttt.getGameDTOBasicInfo();
 
             assertEquals(expectedGameDTO, actualGameDTO);
         }
@@ -169,7 +169,7 @@ public class TicTacToeTests {
         ttt.makeMove(1, 2, 0);
         ttt.makeMove(2, 2, 2);
 
-        boolean isDraw = ttt.getGameDTO().isDraw();
+        boolean isDraw = ttt.getGameDTOBasicInfo().isDraw();
 
         assertTrue(isDraw);
     }
@@ -184,7 +184,7 @@ public class TicTacToeTests {
     @Test
     @DisplayName("No Move on Game Not Started")
     void gameNoStartedTest(){
-        ttt = new TicTacToe(false, 0, 0, false, false, false, newBoard(), new ArrayList<Point>());
+        ttt = new TicTacToe(1, 2, false, 0, 0, false, false, false, newBoard(), new ArrayList<Point>());
         assertFalse(ttt.makeMove(1, 1, 1));
     }
 
