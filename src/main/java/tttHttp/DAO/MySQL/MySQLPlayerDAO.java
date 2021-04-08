@@ -10,7 +10,7 @@ import java.util.List;
 public class MySQLPlayerDAO implements PlayerDAO {
 
     private final String GET_PLAYER = "SELECT players.playerId, playerName, playerToken, GROUP_CONCAT(gameId) as 'playerGames' " +
-            "FROM players, playergames WHERE players.playerId = playergames.playerId AND players.playerId = ?;";
+            "FROM players, playergames WHERE players.playerId = playergames.playerId AND players.playerId = ?";
 
     private final String NEW_PLAYER = "INSERT INTO players (playerName, playerToken) VALUES (?, ?)";
 
