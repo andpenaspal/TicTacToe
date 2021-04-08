@@ -1,11 +1,14 @@
 package tttHttp.models;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class Game {
     private int gameId;
     private int player1Id;
-    private int player2Id;
+    private String player1Name;
+    private Integer player2Id;
+    private String player2Name;
     private boolean gameStarted;
     private int turn;
     private int turnCounter;
@@ -15,7 +18,7 @@ public class Game {
     private int[][] board;
     private List<Point> winningCombination;
 
-    public Game(int gameId, int player1Id, int player2Id, boolean gameStarted, int turn,
+    public Game(int gameId, int player1Id, Integer player2Id, boolean gameStarted, int turn,
                 int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board, List<Point> winningCombination) {
         this.gameId = gameId;
         this.player1Id = player1Id;
@@ -46,12 +49,28 @@ public class Game {
         this.player1Id = player1Id;
     }
 
-    public int getPlayer2Id() {
+    public String getPlayer1Name() {
+        return player1Name;
+    }
+
+    public void setPlayer1Name(String player1Name) {
+        this.player1Name = player1Name;
+    }
+
+    public Integer getPlayer2Id() {
         return player2Id;
     }
 
-    public void setPlayer2Id(int player2Id) {
+    public void setPlayer2Id(Integer player2Id) {
         this.player2Id = player2Id;
+    }
+
+    public String getPlayer2Name() {
+        return player2Name;
+    }
+
+    public void setPlayer2Name(String player2Name) {
+        this.player2Name = player2Name;
     }
 
     public boolean isGameStarted() {
@@ -116,5 +135,28 @@ public class Game {
 
     public void setWinningCombination(List<Point> winningCombination) {
         this.winningCombination = winningCombination;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for(Point p : winningCombination){
+            sb.append(p.toString());
+        }
+        return "Game{" +
+                "gameId=" + gameId +
+                ", player1Id=" + player1Id +
+                ", player1Name='" + player1Name + '\'' +
+                ", player2Id=" + player2Id +
+                ", player2Name='" + player2Name + '\'' +
+                ", gameStarted=" + gameStarted +
+                ", turn=" + turn +
+                ", turnCounter=" + turnCounter +
+                ", winner=" + winner +
+                ", draw=" + draw +
+                ", surrendered=" + surrendered +
+                ", board=" + Arrays.deepToString(board) +
+                ", winningCombination=" + sb.toString() +
+                '}';
     }
 }
