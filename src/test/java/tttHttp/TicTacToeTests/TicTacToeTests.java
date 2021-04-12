@@ -234,7 +234,7 @@ public class TicTacToeTests {
     }
 
     @Test
-    @DisplayName("No Move on Draw")
+    @DisplayName("No Move on Surrendered")
     void noMoveOnSurrenderTest(){
         ttt.makeMove(2, 0, 0);
         ttt.setSurrendered(true);

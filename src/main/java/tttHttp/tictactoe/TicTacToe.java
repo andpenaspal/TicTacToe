@@ -36,14 +36,19 @@ public class TicTacToe {
         this.winningCombination = winningCombination;
     }
 
+    //TODO: exceptions for TicTacToe on conditions and invalid move
     public boolean makeMove(int playerId, int tileCol, int tileRow){
-        if(!gameStarted || (playerId != turn) || !isValidMove(tileCol, tileRow) || isWinner() || isDraw() || isSurrendered()) return false;
+        if(!checkGameConditions(playerId) || !isValidMove(tileCol, tileRow)) return false;
         board[tileCol][tileRow] = turn;
         winner = checkWinner(tileCol, tileRow);
         if(!winner) turn = (turn == player1Id? player2Id : player1Id);
         turnCounter++;
         if(!winner) draw = checkDraw();
         return true;
+    }
+
+    public boolean checkGameConditions(int playerId){
+        return (gameStarted && (playerId == turn) && !isWinner() && !isDraw() && !surrendered);
     }
 
     public boolean isValidMove(int tileCol, int tileRow){
@@ -104,8 +109,8 @@ public class TicTacToe {
         return isWin;
     }
 
-    public int getTurn() {
-        return turn;
+    public void setSurrendered(boolean surrendered) {
+        this.surrendered = surrendered;
     }
 
     public boolean isWinner() {
@@ -116,16 +121,12 @@ public class TicTacToe {
         return draw;
     }
 
-    public boolean isSurrendered() {
-        return surrendered;
+    public List<Point> getWinningCombination() {
+        return winningCombination;
     }
 
-    public void setSurrendered(boolean surrendered) {
-        this.surrendered = surrendered;
-    }
-
+    //Method used only in JUnit Tests
     public GameDTO getGameDTOBasicInfo(){
-
         return new GameDTO(gameStarted, turn, turnCounter, winner, draw, surrendered, board, winningCombination);
     }
 

@@ -1,5 +1,8 @@
 package tttHttp.models;
 
+import tttHttp.DTO.NewPlayerDTO;
+import tttHttp.DTO.PlayerDTO;
+
 import java.util.List;
 
 public class Player {
@@ -45,5 +48,13 @@ public class Player {
 
     public void setGamesIds(List<Integer> gamesIds) {
         this.gamesIds = gamesIds;
+    }
+
+    public PlayerDTO getPlayerDTO(){
+        return new PlayerDTO(playerId, playerName, gamesIds);
+    }
+
+    public NewPlayerDTO getNewPlayerDTO(){
+        return new NewPlayerDTO(playerId, playerName, playerToken);
     }
 }

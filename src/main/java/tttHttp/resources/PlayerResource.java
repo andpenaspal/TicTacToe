@@ -17,7 +17,8 @@ public class PlayerResource {
     @Path("/{playerId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPlayerInformation(@PathParam("playerId") int playerId, @Context HttpHeaders headers){
-        PlayerDTO player = playerController.getPlayer(1);
+        String playerToken = headers.getHeaderString("playerToken");
+        PlayerDTO player = playerController.getPlayerDTO(playerId, playerToken);
         return Response
                 .ok()
                 .entity(player)

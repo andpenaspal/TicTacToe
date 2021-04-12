@@ -1,34 +1,123 @@
 package tttHttp.controllers;
 
+import tttHttp.DAO.DAOManager;
+import tttHttp.DAO.MySQL.MySQLDAOManager;
+import tttHttp.DAO.exceptions.DAODMLException;
+import tttHttp.DAO.exceptions.DAODataNotFoundException;
+import tttHttp.DAO.exceptions.DAOException;
 import tttHttp.DTO.NewPlayerDTO;
 import tttHttp.DTO.PlayerDTO;
+import tttHttp.models.Player;
+import tttHttp.utils.ConfigurationManager;
+import tttHttp.utils.JsonUtils;
 import tttHttp.utils.TokenManager;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
+import java.util.Properties;
 
 public class PlayerController {
 
-    //MySql IV
+    private DAOManager daoManager;
 
-    //MySql Connection DAO on Constructor
+    public PlayerController(){
+        Properties mySQLConfig = ConfigurationManager.getProperties();
 
-    public PlayerDTO getPlayer(int playerId){
-        //TODO: Check if not null, Check authorization, Connect to the database. Get the Player and convert to PlaterDTO
-        List<Integer> testList = new ArrayList<Integer>();
-        testList.add(7);
-        return new PlayerDTO(1, "TestName", testList);
+        String host = mySQLConfig.getProperty("host");
+        int port = Integer.parseInt(mySQLConfig.getProperty("port"));
+        String database = mySQLConfig.getProperty("database");
+        String username = mySQLConfig.getProperty("username");
+        String password = mySQLConfig.getProperty("password");
+
+        try {
+            daoManager = new MySQLDAOManager(host, port, database, username, password);
+        } catch (SQLException | ClassNotFoundException throwables) {
+            //TODO
+            throwables.printStackTrace();
+        }
     }
 
-    public NewPlayerDTO addNewPlayer(String PlayerName){
-        //TODO: get new Token
-        //TODO: Add new player to the database with name and token, get the ID, return newPlayerDTO with all
-        String playerToken = TokenManager.tokenGenerator(50);
-        return new NewPlayerDTO(1, "Testing New Player", playerToken);
+    public PlayerDTO getPlayerDTO(int playerId, String playerToken){
+        if(playerToken == null); //TODO: exception? Mirar donde salta si tiene header null value, o si no tiene header. Creo que lo mejor
+        // seria soltar una exception propia en el Json, cogerla aqui y soltar una mapeada
+
+        Player playerInfo = null;
+        try {
+            playerInfo = daoManager.getPlayerDAO().getPlayer(playerId);
+        } catch (DAODataNotFoundException e) {
+            e.printStackTrace();
+        } catch (DAOException e) {
+            e.printStackTrace();
+        }
+
+        PlayerDTO playerDTO = null;
+
+        if(isAuthenticated(playerToken, playerInfo.getPlayerToken())){
+            playerDTO = playerInfo.getPlayerDTO();
+        }else{
+            //TODO: No Authenticated Exception, put return on if and exception on else
+            System.out.println("Not authenticated");
+        }
+
+        closeConnection();
+        return playerDTO;
     }
 
-    private void playerAuthentication(String playerToken, String storedPlayerToken){
-        //TODO: check Id/Token with Database, return Exception if not match
-        boolean isAuthenticated = TokenManager.validateToken(playerToken, storedPlayerToken);
+    //Called by GameController.class
+    public Player getPlayer(int playerId, String playerToken){
+        if(playerToken == null); //TODO: exception? Mirar donde salta si tiene header null value, o si no tiene header. Creo que lo mejor
+        // seria soltar una exception propia en el Json, cogerla aqui y soltar una mapeada
+        Player playerInfo = null;
+        try {
+            playerInfo = daoManager.getPlayerDAO().getPlayer(playerId);
+        } catch (DAODataNotFoundException e) {
+            e.printStackTrace();
+        } catch (DAOException e) {
+            e.printStackTrace();
+        }
+
+
+        closeConnection();
+
+        if(isAuthenticated(playerToken, playerInfo.getPlayerToken())){
+            return playerInfo;
+        }else{
+            //TODO: No Authenticated Exception, put return on if and exception on else
+            throw new RuntimeException();
+        }
+
+        //return playerDTO;
+    }
+
+    public NewPlayerDTO addNewPlayer(String jsonSrc){
+        String newToken = TokenManager.tokenGenerator(50);
+        String playerName = JsonUtils.getJsonValue(jsonSrc, "playerName");
+        Player newPlayerInfo = null;
+        try {
+            newPlayerInfo = daoManager.getPlayerDAO().newPlayer(playerName, newToken);
+        } catch (DAOException e) {
+            e.printStackTrace();
+        } catch (DAODataNotFoundException e) {
+            e.printStackTrace();
+        } catch (DAODMLException e) {
+            e.printStackTrace();
+        }
+
+
+        closeConnection();
+        return newPlayerInfo.getNewPlayerDTO();
+    }
+
+    private boolean isAuthenticated(String playerToken, String storedPlayerToken){
+        if(playerToken == null) return false;
+        return TokenManager.validateToken(playerToken, storedPlayerToken);
+    }
+
+    private void closeConnection(){
+        try {
+            daoManager.closeConnection();
+        } catch (DAOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

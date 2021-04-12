@@ -19,8 +19,11 @@ public class GameDTO {
     private int[][] board;
     private List<Point> winningCombination;
 
-    public GameDTO(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board,
-                   List<Point> winningCombination) {
+    public GameDTO(int gameId, int playerNumber, String remotePlayerName, boolean gameStarted, int turn, int turnCounter, boolean winner,
+                   boolean draw, boolean surrendered, int[][] board, List<Point> winningCombination) {
+        this.gameId = gameId;
+        this.playerNumber = playerNumber;
+        this.remotePlayerName = remotePlayerName;
         this.gameStarted = gameStarted;
         this.turn = turn;
         this.turnCounter = turnCounter;
@@ -30,6 +33,13 @@ public class GameDTO {
         this.board = board;
         this.winningCombination = winningCombination;
     }
+
+    //Used in TicTacToe.class for JUnit Tests
+    public GameDTO(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board,
+                   List<Point> winningCombination) {
+        this(0, 0, null, gameStarted, turn, turnCounter, winner, draw, surrendered, board, winningCombination);
+    }
+
 
     public int getGameId() {
         return gameId;
@@ -119,6 +129,7 @@ public class GameDTO {
         this.winningCombination = winningCombination;
     }
 
+    //For JUnit Tests
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

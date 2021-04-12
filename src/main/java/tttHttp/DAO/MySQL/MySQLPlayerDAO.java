@@ -1,6 +1,9 @@
 package tttHttp.DAO.MySQL;
 
 import tttHttp.DAO.PlayerDAO;
+import tttHttp.DAO.exceptions.DAODMLException;
+import tttHttp.DAO.exceptions.DAODataNotFoundException;
+import tttHttp.DAO.exceptions.DAOException;
 import tttHttp.models.Player;
 
 import java.sql.*;
@@ -11,34 +14,32 @@ public class MySQLPlayerDAO implements PlayerDAO {
 
     private final String GET_PLAYER = "SELECT players.playerId, playerName, playerToken, GROUP_CONCAT(gameId) as 'playerGames' " +
             "FROM players, playergames WHERE players.playerId = playergames.playerId AND players.playerId = ?";
-
     private final String NEW_PLAYER = "INSERT INTO players (playerName, playerToken) VALUES (?, ?)";
 
-    private Connection connection;
+    private final Connection CONNECTION;
 
     public MySQLPlayerDAO(Connection connection) {
-        this.connection = connection;
+        this.CONNECTION = connection;
     }
 
     @Override
-    public Player getPlayer(int playerId) {
+    public Player getPlayer(int playerId) throws DAODataNotFoundException, DAOException {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         Player player = null;
 
         try {
-            statement = connection.prepareStatement(GET_PLAYER);
+            statement = CONNECTION.prepareStatement(GET_PLAYER);
             statement.setInt(1,playerId);
-
-            resultSet = statement.executeQuery();
 
             if(resultSet.next()){
                 player = mapResultSetToPlayer(resultSet);
             }else{
-                //TODO: No player found with this ID. Throw Exception, catched by the Controller
+                throw new DAODataNotFoundException("Player with ID " + playerId + " not found");
             }
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            //TODO: Log
+            throw new DAOException("Problem trying to get a Player in SQL: " + playerId, throwables);
         }finally {
             closeResultSet(resultSet);
             closeStatement(statement);
@@ -55,8 +56,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
         List<Integer> playerGames;
         playerGames = getPlayerGames(playerGamesConcatenatedGames);
 
-        Player player = new Player(playerId, playerName, playerToken, playerGames);
-        return player;
+        return new Player(playerId, playerName, playerToken, playerGames);
     }
 
     private List<Integer> getPlayerGames(String playerGamesConcatenatedGames) {
@@ -75,20 +75,21 @@ public class MySQLPlayerDAO implements PlayerDAO {
     }
 
     @Override
-    public Player newPlayer(String playerName, String playerToken) {
+    public Player newPlayer(String playerName, String playerToken) throws DAOException, DAODataNotFoundException, DAODMLException {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         Player player = null;
 
         try {
-            statement = connection.prepareStatement(NEW_PLAYER, statement.RETURN_GENERATED_KEYS);
+            statement = CONNECTION.prepareStatement(NEW_PLAYER, statement.RETURN_GENERATED_KEYS);
 
             statement.setString(1, playerName);
             statement.setString(2, playerToken);
 
             int updateResult = statement.executeUpdate();
             if(updateResult == 0){
-                //TODO: No se pudo meter, suelta excepcion
+                //TODO: Log
+                throw new DAODMLException("Problem Inserting a New Player: " + playerName);
             }else{
                 resultSet = statement.getGeneratedKeys();
                 resultSet.next();
@@ -96,7 +97,8 @@ public class MySQLPlayerDAO implements PlayerDAO {
                 player = getPlayer(newPlayerId);
             }
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            //TODO: Log
+            throw new DAOException("Problem trying to Insert a Player in SQL: " + playerName, throwables);
         }finally {
             closeResultSet(resultSet);
             closeStatement(statement);
@@ -104,22 +106,29 @@ public class MySQLPlayerDAO implements PlayerDAO {
         return player;
     }
 
-    private void closeStatement(PreparedStatement statement){
-        try {
-            statement.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+    private void closeStatement(PreparedStatement statement) throws DAOException {
+        if(statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException throwables) {
+                //TODO: Log
+                throw new DAOException("Problem trying to close a Statement in SQL", throwables);
+            }
         }
     }
 
-    private void closeResultSet(ResultSet resultSet){
-        try {
-            resultSet.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+    private void closeResultSet(ResultSet resultSet) throws DAOException {
+        if(resultSet != null) {
+            try {
+                resultSet.close();
+            } catch (SQLException throwables) {
+                //TODO: Log
+                throw new DAOException("Problem trying to close a ResultSet in SQL", throwables);
+            }
         }
     }
 
+    /*
     public static void main(String[] args) {
         try {
             MySQLPlayerDAO playerDAO = new MySQLPlayerDAO(
@@ -129,4 +138,5 @@ public class MySQLPlayerDAO implements PlayerDAO {
             throwables.printStackTrace();
         }
     }
+     */
 }
