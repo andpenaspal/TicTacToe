@@ -1,5 +1,6 @@
 package tttHttp.models;
 
+import java.util.ArrayList;
 import tttHttp.DTO.NewPlayerDTO;
 import tttHttp.DTO.PlayerDTO;
 
@@ -16,6 +17,10 @@ public class Player {
         this.playerName = playerName;
         this.playerToken = playerToken;
         this.gamesIds = gamesIds;
+    }
+
+    public Player(String playerName, String playerToken){
+        this(0, playerName, playerToken, new ArrayList<>());
     }
 
     public int getPlayerId() {

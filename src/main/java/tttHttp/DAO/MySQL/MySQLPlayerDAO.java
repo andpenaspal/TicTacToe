@@ -12,10 +12,6 @@ import java.util.List;
 
 public class MySQLPlayerDAO implements PlayerDAO {
 
-    private final String GET_PLAYER = "SELECT players.playerId, playerName, playerToken, GROUP_CONCAT(gameId) as 'playerGames' " +
-            "FROM players, playergames WHERE players.playerId = playergames.playerId AND players.playerId = ?";
-    private final String NEW_PLAYER = "INSERT INTO players (playerName, playerToken) VALUES (?, ?)";
-
     private final Connection CONNECTION;
 
     public MySQLPlayerDAO(Connection connection) {
@@ -23,14 +19,18 @@ public class MySQLPlayerDAO implements PlayerDAO {
     }
 
     @Override
-    public Player getPlayer(int playerId) throws DAODataNotFoundException, DAOException {
+    public Player get(Integer playerId) throws DAODataNotFoundException, DAOException {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         Player player = null;
 
         try {
+            String GET_PLAYER = "SELECT players.playerId, playerName, playerToken, GROUP_CONCAT(gameId) as 'playerGames' " +
+                    "FROM players, playergames WHERE players.playerId = playergames.playerId AND players.playerId = ? AND players.active = true";
             statement = CONNECTION.prepareStatement(GET_PLAYER);
             statement.setInt(1,playerId);
+
+            resultSet = statement.executeQuery();
 
             if(resultSet.next()){
                 player = mapResultSetToPlayer(resultSet);
@@ -75,16 +75,17 @@ public class MySQLPlayerDAO implements PlayerDAO {
     }
 
     @Override
-    public Player newPlayer(String playerName, String playerToken) throws DAOException, DAODataNotFoundException, DAODMLException {
+    public Integer insert(Player player) throws DAOException, DAODataNotFoundException, DAODMLException {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        Player player = null;
+        int newPlayerId = 0;
 
         try {
+            String NEW_PLAYER = "INSERT INTO players (playerName, playerToken) VALUES (?, ?)";
             statement = CONNECTION.prepareStatement(NEW_PLAYER, statement.RETURN_GENERATED_KEYS);
 
-            statement.setString(1, playerName);
-            statement.setString(2, playerToken);
+            statement.setString(1, player.getPlayerName());
+            statement.setString(2, player.getPlayerToken());
 
             int updateResult = statement.executeUpdate();
             if(updateResult == 0){
@@ -93,8 +94,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
             }else{
                 resultSet = statement.getGeneratedKeys();
                 resultSet.next();
-                int newPlayerId = resultSet.getInt(1);
-                player = getPlayer(newPlayerId);
+                newPlayerId = resultSet.getInt(1);
             }
         } catch (SQLException throwables) {
             //TODO: Log
@@ -103,7 +103,48 @@ public class MySQLPlayerDAO implements PlayerDAO {
             closeResultSet(resultSet);
             closeStatement(statement);
         }
-        return player;
+        return newPlayerId;
+    }
+
+    @Override
+    public void update(Player player) {
+        PreparedStatement statement = null;
+
+        try {
+            String NEW_NAME = "UPDATE players SET playerName = ? WHERE playerId = ?";
+            statement = CONNECTION.prepareStatement(NEW_NAME);
+
+            statement.setString(1, player.getPlayerName());
+            statement.setInt(2, player.getPlayerId());
+
+            if(statement.executeUpdate() == 0){
+                //TODO: Problem updating
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            closeStatement(statement);
+        }
+    }
+
+    @Override
+    public void delete(Player player) {
+        PreparedStatement statement = null;
+
+        try {
+            String DELETE_PLAYER = "UPDATE players SET active = false WHERE playerId = ?";
+            statement = CONNECTION.prepareStatement(DELETE_PLAYER);
+
+            statement.setInt(1, player.getPlayerId());
+
+            if(statement.executeUpdate() == 0){
+                //TODO: Problem deleting
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }finally {
+            closeStatement(statement);
+        }
     }
 
     private void closeStatement(PreparedStatement statement) throws DAOException {

@@ -5,9 +5,8 @@ import tttHttp.DAO.exceptions.DAODataNotFoundException;
 import tttHttp.DAO.exceptions.DAOException;
 import tttHttp.models.Player;
 
-public interface PlayerDAO {
+public interface PlayerDAO extends DAO<Player, Integer>{
+    Integer insert(Player player);
 
-    Player getPlayer(int playerId) throws DAODataNotFoundException, DAOException;
-
-    Player newPlayer(String playerName, String playerToken) throws DAOException, DAODataNotFoundException, DAODMLException;
+    void delete(Player player);
 }
