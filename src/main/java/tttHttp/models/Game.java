@@ -16,10 +16,12 @@ public class Game {
     private boolean draw;
     private boolean surrendered;
     private int[][] board;
+    private Point lastInserted;
     private List<Point> winningCombination;
 
     public Game(int gameId, int player1Id, Integer player2Id, boolean gameStarted, int turn,
-                int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board, List<Point> winningCombination) {
+                int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board,
+                Point lastInserted, List<Point> winningCombination) {
         this.gameId = gameId;
         this.player1Id = player1Id;
         this.player2Id = player2Id;
@@ -30,6 +32,7 @@ public class Game {
         this.draw = draw;
         this.surrendered = surrendered;
         this.board = board;
+        this.lastInserted = lastInserted;
         this.winningCombination = winningCombination;
     }
 
@@ -129,6 +132,14 @@ public class Game {
         this.board = board;
     }
 
+    public Point getLastInserted() {
+        return lastInserted;
+    }
+
+    public void setLastInserted(Point lastInserted) {
+        this.lastInserted = lastInserted;
+    }
+
     public List<Point> getWinningCombination() {
         return winningCombination;
     }
@@ -139,10 +150,6 @@ public class Game {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for(Point p : winningCombination){
-            sb.append(p.toString());
-        }
         return "Game{" +
                 "gameId=" + gameId +
                 ", player1Id=" + player1Id +
@@ -156,7 +163,8 @@ public class Game {
                 ", draw=" + draw +
                 ", surrendered=" + surrendered +
                 ", board=" + Arrays.deepToString(board) +
-                ", winningCombination=" + sb.toString() +
+                ", lastInserted=" + lastInserted +
+                ", winningCombination=" + winningCombination +
                 '}';
     }
 }

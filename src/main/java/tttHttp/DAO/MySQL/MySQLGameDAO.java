@@ -1,8 +1,8 @@
 package tttHttp.DAO.MySQL;
 
-import jdk.nashorn.internal.codegen.CompilerConstants;
 import tttHttp.DAO.GameDAO;
 import tttHttp.models.Game;
+import tttHttp.models.Player;
 import tttHttp.models.Point;
 
 import java.sql.*;
@@ -78,7 +78,7 @@ public class MySQLGameDAO implements GameDAO {
             boolean surrendered = resultSet.getBoolean("surrendered");
 
             game = new Game(gameId, player1Id, player2Id, gameStarted, turn, turnCounter, winner, draw, surrendered, new int[3][3],
-                    new ArrayList<Point>());
+                   null, new ArrayList<Point>());
 
             //If there are moves, will be gameMoveId=1 and go to get the game moves, if not, null=0 on ints
             resultSet.getInt("moveColumn");
@@ -132,7 +132,7 @@ public class MySQLGameDAO implements GameDAO {
     }
 
     @Override
-    public Integer save(int playerId) {
+    public Integer insertPlayerIntoGame(int playerId) {
         CallableStatement statement = null;
         int gameIdWithNewPlayer = 0;
 
@@ -157,23 +157,32 @@ public class MySQLGameDAO implements GameDAO {
     }
 
     @Override
-    public Game makeMove(int playerId, int gameId, Point move) {
+    public void update(Game game) {
+        int turn = game.getTurn() == game.getPlayer1Id()? game.getPlayer2Id() : game.getPlayer1Id();
+        if(game.isWinner()){
+            winnerMove(turn, game.getGameId(), game.getLastInserted(), game.getWinningCombination());
+        }else if(game.isDraw()){
+            makeMove(turn, game.getGameId(), game.getLastInserted(), true);
+        }else{
+            makeMove(turn, game.getGameId(), game.getLastInserted(), false);
+        }
+    }
+
+    public void makeMove(int playerId, int gameId, Point move, boolean isDraw) {
         CallableStatement statement = null;
         Game game = null;
+        String correctStatement = isDraw? MAKE_DRAW_MOVE : MAKE_MOVE;
 
         try {
-            statement = connection.prepareCall(MAKE_MOVE);
+            statement = connection.prepareCall(correctStatement);
             statement.setInt(1, gameId);
             statement.setInt(2, playerId);
             statement.setInt(3, move.getMoveCol());
             statement.setInt(4, move.getMoveRow());
 
-            if(statement.executeUpdate() == 0){
+            if(statement.executeUpdate() == 0) {
                 //TODO: problem. NEVER HERE, MYSQLEXCEPTION BELLOW (CAUSE OF SIGNAL) en TODOS
-            }else{
-                game = getGame(gameId);
             }
-
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             //TODO: mirar el numero de la signal del custom, y del primary key (repeatedtile) para mandar custom exceptions
@@ -181,11 +190,9 @@ public class MySQLGameDAO implements GameDAO {
         }finally {
             closeStatement(statement);
         }
-        return game;
     }
 
-    @Override
-    public Game winnerMove(int playerId, int gameId, Point move, List<Point> winningCombination) {
+    public void winnerMove(int playerId, int gameId, Point move, List<Point> winningCombination) {
         CallableStatement statement = null;
         Game game = null;
 
@@ -209,68 +216,31 @@ public class MySQLGameDAO implements GameDAO {
 
             if(statement.executeUpdate() == 0){
                 //TODO: problem. NEVER HERE, MYSQLEXCEPTION BELLOW (CAUSE OF SIGNAL) en TODOS
-            }else{
-                game = getGame(gameId);
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }finally {
             closeStatement(statement);
         }
-        return game;
     }
 
     @Override
-    public Game drawMove(int playerId, int gameId, Point move) {
+    public void deletePlayerFromGame(Game game, Player player) {
         CallableStatement statement = null;
-        Game game = null;
-
-        try {
-            statement = connection.prepareCall(MAKE_DRAW_MOVE);
-            statement.setInt(1, gameId);
-            statement.setInt(2, playerId);
-            statement.setInt(3, move.getMoveCol());
-            statement.setInt(4, move.getMoveRow());
-
-            if(statement.executeUpdate() == 0){
-                //TODO: problem. NEVER HERE, MYSQLEXCEPTION BELLOW (CAUSE OF SIGNAL) en TODOS
-            }else{
-                game = getGame(gameId);
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }finally {
-            closeStatement(statement);
-        }
-        return game;
-    }
-
-    @Override
-    public void delete(Game game) {
-
-    }
-
-    @Override
-    public Game setSurrendered(int playerId, int gameId) {
-        CallableStatement statement = null;
-        Game game = null;
 
         try {
             statement = connection.prepareCall(SET_SURRENDER);
-            statement.setInt(1, gameId);
-            statement.setInt(2, playerId);
+            statement.setInt(1, game.getGameId());
+            statement.setInt(2, player.getPlayerId());
 
             if(statement.executeUpdate() == 0){
                 //TODO: problem. NEVER HERE, MYSQLEXCEPTION BELLOW (CAUSE OF SIGNAL) en TODOS
-            }else{
-                game = getGame(gameId);
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }finally {
             closeStatement(statement);
         }
-        return game;
     }
 
     private void closeStatement(PreparedStatement statement){
@@ -316,10 +286,7 @@ public class MySQLGameDAO implements GameDAO {
 
 
 
-    @Override
-    public void update(Game game) {
 
-    }
 
 
 }

@@ -71,7 +71,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
     }
 
     @Override
-    public Integer save(Player player) {
+    public Integer insert(Player player) {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         int newPlayerId = 0;
