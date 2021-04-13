@@ -31,6 +31,10 @@ public class MySQLGameDAO implements GameDAO {
     }
 
     @Override
+    public Game get(Integer integer) {
+        return null;
+    }
+    @Override
     public Game getGame(int gameId) {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -276,21 +280,26 @@ public class MySQLGameDAO implements GameDAO {
     }
 
     private void closeStatement(PreparedStatement statement){
-        try {
-            statement.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        if(statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
     }
 
     private void closeResultSet(ResultSet resultSet){
-        try {
-            resultSet.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        if (resultSet != null) {
+            try {
+                resultSet.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
     }
 
+    /*
     public static void main(String[] args) {
         try {
             MySQLGameDAO gameDAO = new MySQLGameDAO(
@@ -305,5 +314,24 @@ public class MySQLGameDAO implements GameDAO {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+    }
+
+     */
+
+
+
+    @Override
+    public Integer save(Game game) {
+        return null;
+    }
+
+    @Override
+    public void update(Game game) {
+
+    }
+
+    @Override
+    public void delete(Game game) {
+
     }
 }

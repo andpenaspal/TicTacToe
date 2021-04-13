@@ -2,9 +2,6 @@ package tttHttp.DAO;
 
 import tttHttp.models.Player;
 
-public interface PlayerDAO {
+public interface PlayerDAO extends DAO<Player, Integer>{
 
-    Player getPlayer(int playerId);
-
-    Player newPlayer(String playerName, String playerToken);
 }
