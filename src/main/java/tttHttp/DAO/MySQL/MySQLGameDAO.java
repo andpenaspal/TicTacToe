@@ -31,11 +31,7 @@ public class MySQLGameDAO implements GameDAO {
     }
 
     @Override
-    public Game get(Integer integer) {
-        return null;
-    }
-    @Override
-    public Game getGame(int gameId) {
+    public Game get(Integer gameId) {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         Game game = null;
@@ -76,8 +72,6 @@ public class MySQLGameDAO implements GameDAO {
             if(resultSet.wasNull()) player2Id = null;
             boolean gameStarted = resultSet.getBoolean("gameStarted");
             int turn = resultSet.getInt("turn");
-            //Set the turn based on the order of the players. Keep the ID in DDBB to preserve the relational structure
-            if(turn != 0) turn = turn == player1Id? 1 : 2;
             int turnCounter = resultSet.getInt("turnCounter");
             boolean winner = resultSet.getBoolean("winner");
             boolean draw = resultSet.getBoolean("draw");
@@ -87,7 +81,7 @@ public class MySQLGameDAO implements GameDAO {
                     new ArrayList<Point>());
 
             //If there are moves, will be gameMoveId=1 and go to get the game moves, if not, null=0 on ints
-            resultSet.getInt("gameMoveId");
+            resultSet.getInt("moveColumn");
             if(!resultSet.wasNull()){
                 getGameMoves(game, resultSet);
             }
@@ -103,7 +97,6 @@ public class MySQLGameDAO implements GameDAO {
                 int moveCol = resultSet.getInt("moveColumn");
                 int moveRow = resultSet.getInt("moveRow");
                 int playerIdMove = resultSet.getInt("playerId");
-                //Set the Tile based on the order of the players. Keep the ID in DDBB to preserve the relational structure
                 game.getBoard()[moveCol][moveRow] = playerIdMove;
                 if(resultSet.getBoolean("winningMove")){
                     game.getWinningCombination().add(new Point(moveCol, moveRow));
@@ -139,9 +132,9 @@ public class MySQLGameDAO implements GameDAO {
     }
 
     @Override
-    public Game addPlayerToGame(int playerId) {
+    public Integer save(int playerId) {
         CallableStatement statement = null;
-        Game game = null;
+        int gameIdWithNewPlayer = 0;
 
         try {
             statement = connection.prepareCall(ADD_PLAYER_TO_GAME);
@@ -152,8 +145,7 @@ public class MySQLGameDAO implements GameDAO {
             if(statement.executeUpdate() == 0){
                 //TODO: Problem
             }else{
-                int newGameId = statement.getInt(2);
-                game = getGame(newGameId);
+                gameIdWithNewPlayer = statement.getInt(2);
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -161,11 +153,8 @@ public class MySQLGameDAO implements GameDAO {
             closeStatement(statement);
         }
 
-        return game;
+        return gameIdWithNewPlayer;
     }
-
-    //TODO: Cambiar el Trigger por una
-    // Stored Procedure (habia que hacerlo igualmente para el select for update)
 
     @Override
     public Game makeMove(int playerId, int gameId, Point move) {
@@ -257,6 +246,11 @@ public class MySQLGameDAO implements GameDAO {
     }
 
     @Override
+    public void delete(Game game) {
+
+    }
+
+    @Override
     public Game setSurrendered(int playerId, int gameId) {
         CallableStatement statement = null;
         Game game = null;
@@ -320,18 +314,12 @@ public class MySQLGameDAO implements GameDAO {
 
 
 
-    @Override
-    public Integer save(Game game) {
-        return null;
-    }
+
 
     @Override
     public void update(Game game) {
 
     }
 
-    @Override
-    public void delete(Game game) {
 
-    }
 }
