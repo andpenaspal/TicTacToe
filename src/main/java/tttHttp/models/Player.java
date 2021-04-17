@@ -54,12 +54,4 @@ public class Player {
     public void setGamesIds(List<Integer> gamesIds) {
         this.gamesIds = gamesIds;
     }
-
-    public PlayerDTO getPlayerDTO(){
-        return new PlayerDTO(playerId, playerName, gamesIds);
-    }
-
-    public NewPlayerDTO getNewPlayerDTO(){
-        return new NewPlayerDTO(playerId, playerName, playerToken);
-    }
 }

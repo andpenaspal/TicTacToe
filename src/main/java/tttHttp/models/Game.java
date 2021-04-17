@@ -19,12 +19,14 @@ public class Game {
     private Point lastInserted;
     private List<Point> winningCombination;
 
-    public Game(int gameId, int player1Id, Integer player2Id, boolean gameStarted, int turn,
+    public Game(int gameId, int player1Id, String player1Name, Integer player2Id, String player2Name, boolean gameStarted, int turn,
                 int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board,
                 Point lastInserted, List<Point> winningCombination) {
         this.gameId = gameId;
         this.player1Id = player1Id;
+        this.player1Name = player1Name;
         this.player2Id = player2Id;
+        this.player2Name = player2Name;
         this.gameStarted = gameStarted;
         this.turn = turn;
         this.turnCounter = turnCounter;
@@ -145,6 +147,17 @@ public class Game {
     }
 
     public void setWinningCombination(List<Point> winningCombination) {
+        this.winningCombination = winningCombination;
+    }
+
+    public void updateGame(int turn, int turnCounter, boolean winner, boolean draw, int[][] board, Point lastInserted,
+                           List<Point> winningCombination){
+        this.turn = turn;
+        this.turnCounter = turnCounter;
+        this.winner = winner;
+        this.draw = draw;
+        this.board = board;
+        this.lastInserted = lastInserted;
         this.winningCombination = winningCombination;
     }
 

@@ -20,8 +20,7 @@ public class PlayerResource {
         String playerToken = headers.getHeaderString("playerToken");
         PlayerDTO player = playerController.getPlayerDTO(playerId, playerToken);
         return Response
-                .ok()
-                .entity(player)
+                .ok(player)
                 .build();
     }
 
@@ -37,6 +36,28 @@ public class PlayerResource {
                 .header("playerId", newPlayerDTO.getPlayerId())
                 .header("playerToken", newPlayerDTO.getPlayerToken())
                 .entity(newPlayerDTO)
+                .build();
+    }
+
+    @PATCH
+    @Path("/{playerId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updatePlayer(@PathParam("playerId") int playerId, String newPlayerName, @Context HttpHeaders headers){
+        String playerToken = headers.getHeaderString("playerToken");
+        PlayerDTO playerDTO = playerController.updatePlayer(playerId, playerToken, newPlayerName);
+        return Response
+                .accepted(playerDTO)
+                .build();
+    }
+
+    @DELETE
+    @Path("/{playerId}")
+    public Response deletePlayer(@PathParam("playerId") int playerId, @Context HttpHeaders headers){
+        String playerToken = headers.getHeaderString("playerToken");
+        playerController.deletePlayer(playerId, playerToken);
+        return Response
+                .accepted()
                 .build();
     }
 }

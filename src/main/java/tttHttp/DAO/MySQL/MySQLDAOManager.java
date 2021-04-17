@@ -16,10 +16,14 @@ public class MySQLDAOManager implements DAOManager {
 
     private Connection connection;
 
-    public MySQLDAOManager(String host, int port, String database, String username, String password) throws SQLException,
+    public MySQLDAOManager(String host, int port, String database, String username, String password) throws DAOException,
             ClassNotFoundException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, username, password);
+        try {
+            connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, username, password);
+        } catch (SQLException throwables) {
+            throw new DAOException("Problem trying to connect to the DDBB", throwables);
+        }
     }
 
     @Override

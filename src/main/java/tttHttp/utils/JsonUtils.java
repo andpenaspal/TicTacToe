@@ -3,6 +3,8 @@ package tttHttp.utils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import tttHttp.httpExceptions.HTTPException;
+import tttHttp.httpExceptions.HttpExceptionManager;
 
 import java.io.IOException;
 
@@ -20,8 +22,8 @@ public class JsonUtils {
         try {
             value = myObjectMapper.readTree(jsonSrc).get(propertyName).asText();
         } catch (IOException e) {
-            //TODO: If property bad written (or none), nullpointer exception
-            e.printStackTrace();
+            //TODO: Log
+            throw new HTTPException(ExceptionsEnum.INVALID_INPUT);
         }
         return value;
     }

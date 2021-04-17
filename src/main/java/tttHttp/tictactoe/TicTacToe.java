@@ -125,6 +125,70 @@ public class TicTacToe {
         return winningCombination;
     }
 
+    public int getPlayer1Id() {
+        return player1Id;
+    }
+
+    public void setPlayer1Id(int player1Id) {
+        this.player1Id = player1Id;
+    }
+
+    public int getPlayer2Id() {
+        return player2Id;
+    }
+
+    public void setPlayer2Id(int player2Id) {
+        this.player2Id = player2Id;
+    }
+
+    public boolean isGameStarted() {
+        return gameStarted;
+    }
+
+    public void setGameStarted(boolean gameStarted) {
+        this.gameStarted = gameStarted;
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+
+    public void setTurn(int turn) {
+        this.turn = turn;
+    }
+
+    public int getTurnCounter() {
+        return turnCounter;
+    }
+
+    public void setTurnCounter(int turnCounter) {
+        this.turnCounter = turnCounter;
+    }
+
+    public void setWinner(boolean winner) {
+        this.winner = winner;
+    }
+
+    public void setDraw(boolean draw) {
+        this.draw = draw;
+    }
+
+    public boolean isSurrendered() {
+        return surrendered;
+    }
+
+    public int[][] getBoard() {
+        return board;
+    }
+
+    public void setBoard(int[][] board) {
+        this.board = board;
+    }
+
+    public void setWinningCombination(List<Point> winningCombination) {
+        this.winningCombination = winningCombination;
+    }
+
     //Method used only in JUnit Tests
     public GameDTO getGameDTOBasicInfo(){
         return new GameDTO(gameStarted, turn, turnCounter, winner, draw, surrendered, board, winningCombination);

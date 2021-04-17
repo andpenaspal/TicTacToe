@@ -8,7 +8,7 @@ import tttHttp.models.Point;
 import java.util.List;
 
 public interface GameDAO extends DAO<Game, Integer>{
-    Integer insertPlayerIntoGame(int playerId);
+    Integer insertPlayerIntoGame(int playerId) throws DAODMLException, DAOException;
 
-    void deletePlayerFromGame(Game game, Player player);
+    void deletePlayerFromGame(Game game, Player player) throws DAODMLException, DAOInvalidMoveException, DAOException, DAOInvalidTurnException, DAOInvalidGameConditionsException;
 }

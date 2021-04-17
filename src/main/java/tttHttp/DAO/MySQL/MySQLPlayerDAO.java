@@ -22,7 +22,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
     public Player get(Integer playerId) throws DAODataNotFoundException, DAOException {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        Player player = null;
+        Player player;
 
         try {
             String GET_PLAYER = "SELECT players.playerId, playerName, playerToken, GROUP_CONCAT(gameId) as 'playerGames' " +
@@ -75,7 +75,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
     }
 
     @Override
-    public Integer insert(Player player) throws DAOException, DAODataNotFoundException, DAODMLException {
+    public Integer insert(Player player) throws DAOException, DAODMLException {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         int newPlayerId = 0;
@@ -90,7 +90,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
             int updateResult = statement.executeUpdate();
             if(updateResult == 0){
                 //TODO: Log
-                throw new DAODMLException("Problem Inserting a New Player: " + playerName);
+                throw new DAODMLException("Problem Inserting a New Player: " + player.getPlayerName());
             }else{
                 resultSet = statement.getGeneratedKeys();
                 resultSet.next();
@@ -98,7 +98,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
             }
         } catch (SQLException throwables) {
             //TODO: Log
-            throw new DAOException("Problem trying to Insert a Player in SQL: " + playerName, throwables);
+            throw new DAOException("Problem trying to Insert a Player in SQL: " + player.getPlayerName(), throwables);
         }finally {
             closeResultSet(resultSet);
             closeStatement(statement);
@@ -107,7 +107,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
     }
 
     @Override
-    public void update(Player player) {
+    public void update(Player player) throws DAOException, DAODMLException {
         PreparedStatement statement = null;
 
         try {
@@ -118,7 +118,8 @@ public class MySQLPlayerDAO implements PlayerDAO {
             statement.setInt(2, player.getPlayerId());
 
             if(statement.executeUpdate() == 0){
-                //TODO: Problem updating
+                //TODO: Log
+                throw new DAODMLException("Problem trying to update Player with Id " + player.getPlayerId() + " to a Game");
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -128,7 +129,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
     }
 
     @Override
-    public void delete(Player player) {
+    public void delete(Player player) throws DAOException, DAODMLException {
         PreparedStatement statement = null;
 
         try {
@@ -138,7 +139,8 @@ public class MySQLPlayerDAO implements PlayerDAO {
             statement.setInt(1, player.getPlayerId());
 
             if(statement.executeUpdate() == 0){
-                //TODO: Problem deleting
+                //TODO: Log
+                throw new DAODMLException("Problem trying to delete Player with Id " + player.getPlayerId() + " to a Game");
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();

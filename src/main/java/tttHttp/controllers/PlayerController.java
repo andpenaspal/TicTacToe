@@ -2,17 +2,17 @@ package tttHttp.controllers;
 
 import tttHttp.DAO.DAOManager;
 import tttHttp.DAO.MySQL.MySQLDAOManager;
-import tttHttp.DAO.exceptions.DAODMLException;
-import tttHttp.DAO.exceptions.DAODataNotFoundException;
-import tttHttp.DAO.exceptions.DAOException;
+import tttHttp.DAO.exceptions.*;
 import tttHttp.DTO.NewPlayerDTO;
 import tttHttp.DTO.PlayerDTO;
+import tttHttp.httpExceptions.HTTPException;
+import tttHttp.httpExceptions.HttpExceptionManager;
 import tttHttp.models.Player;
 import tttHttp.utils.ConfigurationManager;
+import tttHttp.utils.ExceptionsEnum;
 import tttHttp.utils.JsonUtils;
 import tttHttp.utils.TokenManager;
 
-import java.sql.SQLException;
 import java.util.Properties;
 
 public class PlayerController {
@@ -30,94 +30,129 @@ public class PlayerController {
 
         try {
             daoManager = new MySQLDAOManager(host, port, database, username, password);
-        } catch (SQLException | ClassNotFoundException throwables) {
+        } catch (ClassNotFoundException | DAOException throwables) {
             //TODO
-            throwables.printStackTrace();
+            HttpExceptionManager.handleExceptions(throwables);
         }
     }
 
     public PlayerDTO getPlayerDTO(int playerId, String playerToken){
-        if(playerToken == null); //TODO: exception? Mirar donde salta si tiene header null value, o si no tiene header. Creo que lo mejor
-        // seria soltar una exception propia en el Json, cogerla aqui y soltar una mapeada
+        Player playerInfo;
+        PlayerDTO playerDTO;
 
-        Player playerInfo = null;
-        try {
-            playerInfo = daoManager.getPlayerDAO().getPlayer(playerId);
-        } catch (DAODataNotFoundException e) {
-            e.printStackTrace();
-        } catch (DAOException e) {
-            e.printStackTrace();
-        }
+        playerInfo = getPlayer(playerId, playerToken);
 
-        PlayerDTO playerDTO = null;
+        playerDTO = new PlayerDTO(playerInfo.getPlayerId(), playerInfo.getPlayerName(), playerInfo.getGamesIds());
 
-        if(isAuthenticated(playerToken, playerInfo.getPlayerToken())){
-            playerDTO = playerInfo.getPlayerDTO();
-        }else{
-            //TODO: No Authenticated Exception, put return on if and exception on else
-            System.out.println("Not authenticated");
-        }
-
-        closeConnection();
         return playerDTO;
     }
 
-    //Called by GameController.class
+    //[public] Called by GameController.class. Return Player, not PlayerDTO => Internal Info. Closes Player Connection
     public Player getPlayer(int playerId, String playerToken){
-        if(playerToken == null); //TODO: exception? Mirar donde salta si tiene header null value, o si no tiene header. Creo que lo mejor
-        // seria soltar una exception propia en el Json, cogerla aqui y soltar una mapeada
-        Player playerInfo = null;
-        try {
-            playerInfo = daoManager.getPlayerDAO().getPlayer(playerId);
-        } catch (DAODataNotFoundException e) {
-            e.printStackTrace();
-        } catch (DAOException e) {
-            e.printStackTrace();
-        }
-
+        Player player = getPlayerFromDAO(playerId);
 
         closeConnection();
 
-        if(isAuthenticated(playerToken, playerInfo.getPlayerToken())){
-            return playerInfo;
-        }else{
-            //TODO: No Authenticated Exception, put return on if and exception on else
-            throw new RuntimeException();
-        }
+        isAuthenticated(playerToken, player.getPlayerToken());
 
-        //return playerDTO;
+        return player;
     }
 
     public NewPlayerDTO addNewPlayer(String jsonSrc){
         String newToken = TokenManager.tokenGenerator(50);
         String playerName = JsonUtils.getJsonValue(jsonSrc, "playerName");
-        Player newPlayerInfo = null;
+        Player player = new Player(playerName, newToken);
+        int newPlayerId = 0;
+        NewPlayerDTO newPlayerDTO;
+
         try {
-            newPlayerInfo = daoManager.getPlayerDAO().newPlayer(playerName, newToken);
-        } catch (DAOException e) {
-            e.printStackTrace();
-        } catch (DAODataNotFoundException e) {
-            e.printStackTrace();
-        } catch (DAODMLException e) {
-            e.printStackTrace();
+            newPlayerId = daoManager.getPlayerDAO().insert(player);
+        } catch (DAOException | DAODMLException e) {
+            HttpExceptionManager.handleExceptions(e);
         }
 
+        player = getPlayerFromDAO(newPlayerId);
 
         closeConnection();
-        return newPlayerInfo.getNewPlayerDTO();
+
+        newPlayerDTO = new NewPlayerDTO(player.getPlayerId(), player.getPlayerName(), player.getPlayerToken());
+
+        return newPlayerDTO;
     }
 
-    private boolean isAuthenticated(String playerToken, String storedPlayerToken){
-        if(playerToken == null) return false;
-        return TokenManager.validateToken(playerToken, storedPlayerToken);
+    public PlayerDTO updatePlayer(int playerId, String playerToken, String jsonSrc){
+        Player player;
+        PlayerDTO playerDTO;
+        String playerName = JsonUtils.getJsonValue(jsonSrc, "playerName");
+
+        player = getAuthenticatedPlayerFromDAO(playerId, playerToken);
+
+        try {
+            daoManager.getPlayerDAO().update(player);
+        } catch (DAODMLException | DAOException | DAOInvalidGameConditionsException | DAOInvalidMoveException | DAOInvalidTurnException e) {
+            HttpExceptionManager.handleExceptions(e);
+        }
+
+        player = getPlayerFromDAO(playerId);
+
+        closeConnection();
+
+        playerDTO = new PlayerDTO(player.getPlayerId(), player.getPlayerName(), player.getGamesIds());
+
+        return playerDTO;
+    }
+
+    public void deletePlayer(int playerId, String playerToken){
+        Player player;
+
+        player = getAuthenticatedPlayerFromDAO(playerId, playerToken);
+
+        try {
+            daoManager.getPlayerDAO().delete(player);
+        } catch (DAOException | DAODMLException e) {
+            HttpExceptionManager.handleExceptions(e);
+        }
+
+        closeConnection();
+    }
+
+    private Player getPlayerFromDAO(int playerId){
+        Player player = null;
+        try {
+            player = daoManager.getPlayerDAO().get(playerId);
+        } catch (DAODataNotFoundException | DAOException e) {
+            //TODO: Log?
+            HttpExceptionManager.handleExceptions(e);
+        }
+        return player;
+    }
+
+    private Player getAuthenticatedPlayerFromDAO(int playerId, String playerToken){
+        Player player = null;
+        try {
+            player = daoManager.getPlayerDAO().get(playerId);
+        } catch (DAODataNotFoundException | DAOException e) {
+            //TODO: Log?
+            HttpExceptionManager.handleExceptions(e);
+        }
+
+        isAuthenticated(playerToken, player.getPlayerToken());
+
+        return player;
+    }
+
+    private void isAuthenticated(String playerToken, String storedPlayerToken){
+        if(playerToken == null || !TokenManager.validateToken(playerToken, storedPlayerToken)){
+            throw new HTTPException(ExceptionsEnum.NO_AUTHENTICATED);
+        }
     }
 
     private void closeConnection(){
         try {
             daoManager.closeConnection();
         } catch (DAOException e) {
-            e.printStackTrace();
+            //TODO: Log?
+            HttpExceptionManager.handleExceptions(e);
         }
-
     }
 }
