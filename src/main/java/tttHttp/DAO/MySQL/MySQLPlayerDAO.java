@@ -25,8 +25,8 @@ public class MySQLPlayerDAO implements PlayerDAO {
         Player player;
 
         try {
-            String GET_PLAYER = "SELECT players.playerId, playerName, playerToken, GROUP_CONCAT(gameId) as 'playerGames' " +
-                    "FROM players, playergames WHERE players.playerId = playergames.playerId AND players.playerId = ? AND players.active = true";
+            String GET_PLAYER = "select players.playerId, playerName, playerToken, group_concat(gameId) as 'playergames' from players, " +
+                    "games where players.playerId = 10 AND (players.playerId = games.player1Id OR players.playerId = games.player2Id)";
             statement = CONNECTION.prepareStatement(GET_PLAYER);
             statement.setInt(1,playerId);
 
