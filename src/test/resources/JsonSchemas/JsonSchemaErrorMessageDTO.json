@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://localhost:8086/TicTacToe_HTTP_war_exploded/webapi/",
+  "title": "ErrorMessageDTO",
+  "description": "As Error in TicTacToe",
+  "type": "object",
+  "properties": {
+    "errorCode": {
+      "description": "Code of the Error",
+      "type": "integer"
+    },
+    "errorMessage": {
+      "description": "Message with a description of the Error that has occurred",
+      "type": "string"
+    }
+  },
+    "required": [
+      "errorCode",
+      "errorMessage"
+    ]
+}

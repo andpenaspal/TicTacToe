@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://localhost:8086/TicTacToe_HTTP_war_exploded/webapi/players/{playerId}/games",
+  "title": "GameDTO",
+  "description": "A Game in TicTacToe",
+  "type": "object",
+  "properties": {
+    "gameId": {
+      "description": "ID of the Game",
+      "type": "integer"
+    },
+    "playerNumber": {
+      "description": "Indicates if the Player who requested the GameDTO is the Player Number 1 or 2",
+      "type": "integer"
+    },
+    "remotePlayerName": {
+      "description": "The name of the rival of the Player who requested the GameDTO",
+      "type": "string"
+    },
+    "gameStarted": {
+      "description": "Indicates if the Game has started or it is waiting for a Second Player",
+      "type": "boolean"
+    },
+    "turn": {
+      "description": "Indicates whose Player Turn currently is by its Player Number, or 0 if the game has not started yet",
+      "type": "integer"
+    },
+    "turnCounter": {
+      "description": "Indicates the number of Tiles placed in the Board so far",
+      "type": "integer"
+    },
+    "winner": {
+      "description": "Indicates if a Player has won the Game. The winner is the one holding the Turn",
+      "type": "boolean"
+    },
+    "draw": {
+      "description": "Indicates there are no more possible movements in the Game",
+      "type": "boolean"
+    },
+    "surrendered": {
+      "description": "Indicates that a Player has surrendered and it is no longer playing the Game. The surrendered is the Player holding the Turn",
+      "type": "boolean"
+    },
+    "board": {
+      "description": "Layout of the Board of the Game and its contents. Each Tile represented with the PlayerNumber of the Player who played it or a 0 representing and empty tile",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      }
+    },
+    "winningCombination": {
+      "description": "List of Points [column, row] representing the Tiles on the Board that integrate the Winning Combination. Only shown when there is a Winner for the Game",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "required": [
+    "gameId",
+    "playerNumber",
+    "remotePlayerName",
+    "gameStarted",
+    "turn",
+    "turnCounter",
+    "winner",
+    "draw",
+    "surrendered",
+    "board",
+    "winningCombination"
+  ]
+}

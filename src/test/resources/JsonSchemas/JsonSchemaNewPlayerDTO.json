@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://localhost:8086/TicTacToe_HTTP_war_exploded/webapi/players",
+  "title": "NewPlayerDTO",
+  "description": "A New Player in TicTacToe",
+  "type": "object",
+  "properties": {
+    "playerName": {
+      "description": "Name of the Player",
+      "type": "string"
+    },
+    "playerId": {
+      "description": "Id of the Player",
+      "type": "integer"
+    },
+    "playerToken": {
+      "description": "Alphanumeric Sequence that Authenticates a Player in the System",
+      "type": "string"
+    }
+  },
+  "required": [
+    "playerName",
+    "playerId",
+    "playerToken"
+  ]
+}
