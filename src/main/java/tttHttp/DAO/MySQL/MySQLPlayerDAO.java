@@ -25,10 +25,12 @@ public class MySQLPlayerDAO implements PlayerDAO {
         Player player;
 
         try {
-            String GET_PLAYER = "select players.playerId, playerName, playerToken, group_concat(gameId) as 'playergames' from players, " +
-                    "games where players.playerId = 10 AND (players.playerId = games.player1Id OR players.playerId = games.player2Id)";
+            //"Group By" to avoid 1 row with nulls on not found instead of 0 rows as required
+            String GET_PLAYER = "SELECT players.playerId, playerName, playerToken, group_concat(gameId) AS 'playergames' FROM players " +
+                    "LEFT JOIN games on players.playerId = games.player1Id OR players.playerId = games.player2Id WHERE players.playerId =" +
+                    " ? AND players.active = true GROUP BY players.playerId";
             statement = CONNECTION.prepareStatement(GET_PLAYER);
-            statement.setInt(1,playerId);
+            statement.setInt(1, playerId);
 
             resultSet = statement.executeQuery();
 
@@ -171,15 +173,20 @@ public class MySQLPlayerDAO implements PlayerDAO {
         }
     }
 
-    /*
+
     public static void main(String[] args) {
         try {
             MySQLPlayerDAO playerDAO = new MySQLPlayerDAO(
                     DriverManager.getConnection("jdbc:mysql://localhost/tictactoe", "root", ""));
-            playerDAO.newPlayer("TestingJava", "testingJavaToken");
+            Player player = playerDAO.get(4);
+            System.out.println(player.toString());
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+        } catch (DAOException e) {
+            e.printStackTrace();
+        } catch (DAODataNotFoundException e) {
+            e.printStackTrace();
         }
     }
-     */
+
 }
