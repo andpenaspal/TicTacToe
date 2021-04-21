@@ -3,6 +3,7 @@ package tttHttp.utils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import tttHttp.httpExceptions.HTTPException;
 import tttHttp.httpExceptions.HttpExceptionManager;
 
@@ -20,7 +21,13 @@ public class JsonUtils {
     public static String getJsonValue(String jsonSrc, String propertyName){
         String value = null;
         try {
-            value = myObjectMapper.readTree(jsonSrc).get(propertyName).asText();
+            //value = myObjectMapper.readTree(jsonSrc).get(propertyName).asText();
+            JsonNode node = myObjectMapper.readTree(jsonSrc);
+            if(node.has(propertyName) && !node.get(propertyName).isNull()){
+                value = node.get(propertyName).asText();
+            }else{
+                throw new HTTPException(ExceptionsEnum.INVALID_INPUT);
+            }
         } catch (IOException e) {
             //TODO: Log
             throw new HTTPException(ExceptionsEnum.INVALID_INPUT);

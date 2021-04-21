@@ -7,7 +7,7 @@ public enum ExceptionsEnum {
     NOT_FOUND("The resource could not be accessed", 404),
     INVALID_GAME_CONDITIONS("The conditions of the Game do no allow this action", 409),
     NO_VALID_MOVE("The Move is not a valid Move", 409),
-    INVALID_INPUT("Invalid Json Input Format", 400),
+    INVALID_INPUT("Invalid Input", 400),
     INTERNAL_SERVER_ERROR("Unexpected Error", 500);
 
 

@@ -65,6 +65,8 @@ public class PlayerController {
         int newPlayerId = 0;
         NewPlayerDTO newPlayerDTO;
 
+        isCorrectName(playerName);
+
         try {
             newPlayerId = daoManager.getPlayerDAO().insert(player);
         } catch (DAOException | DAODMLException e) {
@@ -85,7 +87,10 @@ public class PlayerController {
         PlayerDTO playerDTO;
         String playerName = JsonUtils.getJsonValue(jsonSrc, "playerName");
 
+        isCorrectName(playerName);
+
         player = getAuthenticatedPlayerFromDAO(playerId, playerToken);
+        player.setPlayerName(playerName);
 
         try {
             daoManager.getPlayerDAO().update(player);
@@ -117,6 +122,7 @@ public class PlayerController {
     }
 
     private Player getPlayerFromDAO(int playerId){
+        if(playerId <= 0) throw new HTTPException(ExceptionsEnum.NOT_FOUND);
         Player player = null;
         try {
             player = daoManager.getPlayerDAO().get(playerId);
@@ -128,13 +134,7 @@ public class PlayerController {
     }
 
     private Player getAuthenticatedPlayerFromDAO(int playerId, String playerToken){
-        Player player = null;
-        try {
-            player = daoManager.getPlayerDAO().get(playerId);
-        } catch (DAODataNotFoundException | DAOException e) {
-            //TODO: Log?
-            HttpExceptionManager.handleExceptions(e);
-        }
+        Player player = getPlayerFromDAO(playerId);
 
         isAuthenticated(playerToken, player.getPlayerToken());
 
@@ -147,6 +147,12 @@ public class PlayerController {
         }
     }
 
+    private void isCorrectName(String playerName){
+        if(playerName.length() < 3 || playerName.length() > 10 || playerName == null){
+            throw new HTTPException(ExceptionsEnum.INVALID_INPUT);
+        }
+    }
+
     private void closeConnection(){
         try {
             daoManager.closeConnection();
@@ -154,5 +160,10 @@ public class PlayerController {
             //TODO: Log?
             HttpExceptionManager.handleExceptions(e);
         }
+    }
+
+    public static void main(String[] args) {
+        PlayerController playerController = new PlayerController();
+        playerController.getPlayerDTO(1, null);
     }
 }

@@ -19,15 +19,21 @@ public class PlayerResourceRestAssuredTests {
     @BeforeAll
     static void setUp(){
         RestAssured.baseURI = "http://localhost:8086/TicTacToe_HTTP_war_exploded/webapi/players/";
-        DDBBTestingDataLoader.loadDDBBTestingData(PlayerResourceRestAssuredTests.class.getResource("/DDBBTestingSQL" +
-                "/DDBBTestingDataPlayers.sql").getFile());
+        try {
+            DDBBTestingDataLoader.loadDDBBTestingData(PlayerResourceRestAssuredTests.class.getResource("/DDBBTestingSQL" +
+                    "/DDBBTestingDataPlayers.sql").getFile());
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
     }
-
+/*
     @AfterAll
     static void tearDown(){
         DDBBTestingDataLoader.loadDDBBTestingData(PlayerResourceRestAssuredTests.class.getResource("/DDBBTestingSQL" +
                 "/DDBBTestingDataTearDown.sql").getFile());
     }
+
+ */
 
     /*
      * Tests for Player:
