@@ -189,10 +189,30 @@ public class GameController {
 
     private GameDTO getFullGameDTO(int playerId, Game game){
         int playerNumber = game.getPlayer1Id() == playerId? 1 : 2;
-        String remotePlayerName = playerNumber == 1? game.getPlayer1Name() : game.getPlayer2Name();
+        String remotePlayerName = playerNumber == 1? game.getPlayer2Name() : game.getPlayer1Name();
+
+        game.setBoard(anonymizeBoard(game.getPlayer1Id(), game.getPlayer2Id(), game.getBoard()));
+        game.setTurn(anonymizeTurn(game.getPlayer1Id(), game.getTurn()));
 
         return new GameDTO(game.getGameId(), playerNumber, remotePlayerName, game.isGameStarted(), game.getTurn(),
                 game.getTurnCounter(), game.isWinner(), game.isDraw(), game.isSurrendered(), game.getBoard(), game.getWinningCombination());
+    }
+
+    private int[][] anonymizeBoard(int player1Id, int player2Id, int[][] board){
+        for(int i = 0; i < board.length; i++){
+            for(int j = 0; j < board[0].length; j++){
+                if(board[i][j] == player1Id){
+                    board[i][j] = 1;
+                }else if(board[i][j] == player2Id) {
+                    board[i][j] = 2;
+                }
+            }
+        }
+        return board;
+    }
+
+    private int anonymizeTurn(int player1Id, int turn){
+        return turn == player1Id? 1 : 2;
     }
 
     private void closeConnection(){
@@ -201,5 +221,10 @@ public class GameController {
         } catch (DAOException e) {
             HttpExceptionManager.handleExceptions(e);
         }
+    }
+
+    public static void main(String[] args) {
+        GameController gameController = new GameController();
+        gameController.getGame(1, 1, "Token1");
     }
 }
