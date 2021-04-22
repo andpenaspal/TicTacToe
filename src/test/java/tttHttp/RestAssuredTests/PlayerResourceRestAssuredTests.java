@@ -36,36 +36,36 @@ public class PlayerResourceRestAssuredTests {
  */
 
     /*
-     * Tests for Player:
-     * - Get:
-     *  * Happy path with Games
-     *  * Happy path no Games
-     *  * Happy path with no started Game
-     *  * Deleted Player
-     *  * Incorrect Token
-     *  * Null Token Header
-     *  * No Token Header
-     *  * No Player (Max_integer, Min_integer)
-     * - Post:
-     *  * Happy Path
-     *  * Name Input Boundaries (empty, <3 Or >10)
-     *  * Incorrect Json Key
-     *  * Null Json
-     * - Patch:
-     *  * Happy Path
-     *  * Incorrect Token
-     *  * Null Token Header
-     *  * No Token Header
-     *  * Name Input Boundaries (empty, <3 Or >10)
-     *  * Incorrect Json Key
-     *  * Null Json
-     * - Delete:
-     *  * Happy Path with Game
-     *  * Happy Path with no Game
-     *  * Happy Path with no started Game
-     *  * Incorrect Token
-     *  * Null Token Header
-     *  * No Token Header
+     Tests for Player:
+    - Get:
+        - Happy path with Games
+        - Happy path no Games
+        - Happy path with no started Game
+        - Deleted Player
+        - Incorrect Token
+        - Null Token Header
+        - No Token Header
+        - No Player (Max_integer, Min_integer)
+    - Post:
+        - Happy Path
+        - Name Input Boundaries (empty, <3 Or >10)
+        - Incorrect Json Key
+        - Null Json
+    - Patch:
+        - Happy Path
+        - Incorrect Token
+        - Null Token Header
+        - No Token Header
+        - Name Input Boundaries (empty, <3 Or >10)
+        - Incorrect Json Key
+        - Null Json
+    - Delete:
+        - Happy Path with Game
+        - Happy Path with no Game
+        - Happy Path with no started Game
+        - Incorrect Token
+        - Null Token Header
+        - No Token Header
      */
 
     //TODO: Fix all ErrorMessages: Documentation and not ErrorCode
@@ -93,7 +93,6 @@ public class PlayerResourceRestAssuredTests {
                                 "gamesIds", hasItems(1, 3))
                         .log().ifValidationFails();
 
-            //TODO: Update "gameIds" once the Game Tests are done
         }
 
         @Test
@@ -526,7 +525,7 @@ public class PlayerResourceRestAssuredTests {
                         .assertThat()
                         .statusCode(HttpStatus.SC_OK)
                         .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaGameDTO.json"))
-                        .body("turn", equalTo(5),
+                        .body("turn", equalTo(2),
                                 "surrendered", equalTo(true))
                         .log().ifValidationFails();
         }
