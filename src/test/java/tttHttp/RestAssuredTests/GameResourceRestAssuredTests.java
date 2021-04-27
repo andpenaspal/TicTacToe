@@ -298,6 +298,7 @@ public class GameResourceRestAssuredTests {
     class Post{
 
         @Test
+        @Disabled
         @DisplayName("New Game")
         void newGame(){
 
@@ -327,6 +328,7 @@ public class GameResourceRestAssuredTests {
         }
 
         @Test
+        @Disabled
         @DisplayName("New Game Second Player")
         void newGameSecondPlayer(){
 

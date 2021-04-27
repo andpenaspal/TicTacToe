@@ -129,6 +129,7 @@ public class MySQLGameDAO implements GameDAO {
         return playerName;
     }
 
+    /*
     @Override
     public Integer insertPlayerIntoGame(int playerId) throws DAODMLException, DAOException{
         CallableStatement statement = null;
@@ -154,6 +155,61 @@ public class MySQLGameDAO implements GameDAO {
             closeStatement(statement);
         }
 
+        return gameIdWithNewPlayer;
+    }
+     */
+    @Override
+    public Integer insertPlayerIntoGame(int playerId) throws DAODMLException, DAOException{
+        int gameIdWithNewPlayer = 0;
+        String lockNoStartedGame = "SELECT * FROM games WHERE gameStarted = false AND NOT player1Id = ? limit 1 for update";
+        String insertNewGame = "INSERT INTO games (player1Id) VALUES (?)";
+        PreparedStatement lockStatement = null;
+        PreparedStatement insertStatement = null;
+        ResultSet lockResultSet = null;
+        ResultSet insertResultSet = null;
+
+        try {
+            CONNECTION.setAutoCommit(false);
+
+            lockStatement = CONNECTION.prepareStatement(lockNoStartedGame, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            lockStatement.setInt(1, playerId);
+            lockResultSet = lockStatement.executeQuery();
+
+            if(lockResultSet.next()){
+                gameIdWithNewPlayer = lockResultSet.getInt("gameId");
+                lockResultSet.updateInt("player2Id", playerId);
+                lockResultSet.updateBoolean("gameStarted", true);
+                lockResultSet.updateInt("turn", playerId);
+                lockResultSet.updateRow();
+            }else{
+                insertStatement = CONNECTION.prepareStatement(insertNewGame);
+                insertStatement.setInt(1, playerId);
+                if(insertStatement.executeUpdate() == 0) {
+                    //TODO: Log
+                    CONNECTION.rollback();
+                    throw new DAODMLException("Problem trying to create a new Game for Player with Id " + playerId);
+                }else {
+                    insertResultSet = insertStatement.getGeneratedKeys();
+                    insertResultSet.next();
+                    gameIdWithNewPlayer = insertResultSet.getInt(1);
+                }
+            }
+        } catch (SQLException throwables) {
+            //TODO: ? Log
+            try {
+                CONNECTION.rollback();
+                restoreAutoCommit();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            throwables.printStackTrace();
+        }finally {
+            restoreAutoCommit();
+            closeStatement(lockStatement);
+            closeStatement(insertStatement);
+            closeResultSet(lockResultSet);
+            closeResultSet(insertResultSet);
+        }
         return gameIdWithNewPlayer;
     }
 
@@ -279,6 +335,14 @@ public class MySQLGameDAO implements GameDAO {
         }
     }
 
+    private void restoreAutoCommit() {
+        try {
+            CONNECTION.setAutoCommit(true);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
     private void catchMySQLMoveExceptions(int playerId, int gameId, SQLException throwables) throws DAOInvalidMoveException, DAOInvalidGameConditionsException, DAOInvalidTurnException, DAOException {
         switch (throwables.getSQLState()) {
             case "23000":
@@ -290,6 +354,11 @@ public class MySQLGameDAO implements GameDAO {
             default:
                 throw new DAOException("Problem trying to modify data in the DDBB", throwables);
         }
+    }
+
+    public static void main(String[] args) {
+        MySQLGameDAO gameDAO = new MySQLGameDAO(
+                DriverManager.getConnection("jdbc:mysql://localhost/tictactoe", "root", ""));
     }
 
     /*
