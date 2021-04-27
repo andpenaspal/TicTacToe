@@ -13,6 +13,8 @@ import tttHttp.tictactoe.TicTacToe;
 import tttHttp.utils.ConfigurationManager;
 import tttHttp.utils.ExceptionsEnum;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 public class GameController {
@@ -189,13 +191,35 @@ public class GameController {
 
     private GameDTO getFullGameDTO(int playerId, Game game){
         int playerNumber = game.getPlayer1Id() == playerId? 1 : 2;
-        String remotePlayerName = playerNumber == 1? game.getPlayer2Name() : game.getPlayer1Name();
+        String remotePlayerName = null;
+        if(game.isGameStarted()) {
+            remotePlayerName = playerNumber == 1 ? game.getPlayer2Name() : game.getPlayer1Name();
 
-        game.setBoard(anonymizeBoard(game.getPlayer1Id(), game.getPlayer2Id(), game.getBoard()));
-        game.setTurn(anonymizeTurn(game.getPlayer1Id(), game.getTurn()));
+            game.setBoard(anonymizeBoard(game.getPlayer1Id(), game.getPlayer2Id(), game.getBoard()));
+            game.setTurn(anonymizeTurn(game.getPlayer1Id(), game.getTurn()));
+        }
 
-        return new GameDTO(game.getGameId(), playerNumber, remotePlayerName, game.isGameStarted(), game.getTurn(),
-                game.getTurnCounter(), game.isWinner(), game.isDraw(), game.isSurrendered(), game.getBoard(), game.getWinningCombination());
+        int[][] winningCombination2DInt = get2DIntFromListPoints(game.getWinningCombination());
+
+        return new GameDTO(game.getGameId(), playerNumber,remotePlayerName, game.isGameStarted(), game.getTurn(), game.getTurnCounter(),
+                game.isWinner(), game.isDraw(), game.isSurrendered(), game.getBoard(), winningCombination2DInt);
+    }
+
+    private int[][] get2DIntFromListPoints(List<Point> winningCombination) {
+        if(winningCombination.isEmpty() || winningCombination == null) return null;
+        int[][] int2D = new int[3][2];
+        Iterator<Point> iter = winningCombination.iterator();
+        for(int i = 0; i < int2D.length; i++){
+            if(iter.hasNext()){
+                Point p = iter.next();
+                int2D[i][0] = p.getMoveCol();
+                int2D[i][1] = p.getMoveRow();
+            }else{
+                //TODO: Log
+                throw new HTTPException(ExceptionsEnum.INTERNAL_SERVER_ERROR);
+            }
+        }
+        return int2D;
     }
 
     private int[][] anonymizeBoard(int player1Id, int player2Id, int[][] board){
@@ -225,6 +249,6 @@ public class GameController {
 
     public static void main(String[] args) {
         GameController gameController = new GameController();
-        gameController.getGame(1, 1, "Token1");
+        gameController.newGame(3, "Token3");
     }
 }

@@ -65,14 +65,12 @@
   "required": [
     "gameId",
     "playerNumber",
-    "remotePlayerName",
     "gameStarted",
     "turn",
     "turnCounter",
     "winner",
     "draw",
     "surrendered",
-    "board",
-    "winningCombination"
+    "board"
   ]
 }

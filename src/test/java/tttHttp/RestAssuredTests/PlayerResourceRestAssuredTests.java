@@ -26,14 +26,12 @@ public class PlayerResourceRestAssuredTests {
             e.printStackTrace();
         }
     }
-/*
+
     @AfterAll
     static void tearDown(){
         DDBBTestingDataLoader.loadDDBBTestingData(PlayerResourceRestAssuredTests.class.getResource("/DDBBTestingSQL" +
                 "/DDBBTestingDataTearDown.sql").getFile());
     }
-
- */
 
     /*
      Tests for Player:

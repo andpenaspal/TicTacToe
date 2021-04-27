@@ -1,5 +1,6 @@
 package tttHttp.DTO;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import tttHttp.models.Point;
 
 import java.util.Arrays;
@@ -17,10 +18,10 @@ public class GameDTO {
     private boolean draw;
     private boolean surrendered;
     private int[][] board;
-    private List<Point> winningCombination;
+    private int[][] winningCombination;
 
     public GameDTO(int gameId, int playerNumber, String remotePlayerName, boolean gameStarted, int turn, int turnCounter, boolean winner,
-                   boolean draw, boolean surrendered, int[][] board, List<Point> winningCombination) {
+                   boolean draw, boolean surrendered, int[][] board, int[][] winningCombination) {
         this.gameId = gameId;
         this.playerNumber = playerNumber;
         this.remotePlayerName = remotePlayerName;
@@ -36,7 +37,7 @@ public class GameDTO {
 
     //Used in TicTacToe.class for JUnit Tests
     public GameDTO(boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw, boolean surrendered, int[][] board,
-                   List<Point> winningCombination) {
+                   int[][] winningCombination) {
         this(0, 0, null, gameStarted, turn, turnCounter, winner, draw, surrendered, board, winningCombination);
     }
 
@@ -121,27 +122,29 @@ public class GameDTO {
         this.board = board;
     }
 
-    public List<Point> getWinningCombination() {
+    public int[][] getWinningCombination() {
         return winningCombination;
     }
 
-    public void setWinningCombination(List<Point> winningCombination) {
+    public void setWinningCombination(int[][] winningCombination) {
         this.winningCombination = winningCombination;
     }
 
     //For JUnit Tests
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GameDTO gameDTO = (GameDTO) o;
-        return gameId == gameDTO.gameId && playerNumber == gameDTO.playerNumber && gameStarted == gameDTO.gameStarted && turn == gameDTO.turn && turnCounter == gameDTO.turnCounter && winner == gameDTO.winner && draw == gameDTO.draw && surrendered == gameDTO.surrendered && Objects.equals(remotePlayerName, gameDTO.remotePlayerName) && Arrays.deepEquals(board, gameDTO.board);
+        return gameId == gameDTO.gameId && playerNumber == gameDTO.playerNumber && gameStarted == gameDTO.gameStarted && turn == gameDTO.turn && turnCounter == gameDTO.turnCounter && winner == gameDTO.winner && draw == gameDTO.draw && surrendered == gameDTO.surrendered && Objects.equals(remotePlayerName, gameDTO.remotePlayerName) && Arrays.deepEquals(board, gameDTO.board) && Arrays.deepEquals(winningCombination, gameDTO.winningCombination);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(gameId, playerNumber, remotePlayerName, gameStarted, turn, turnCounter, winner, draw, surrendered);
         result = 31 * result + Arrays.deepHashCode(board);
+        result = 31 * result + Arrays.deepHashCode(winningCombination);
         return result;
     }
 }

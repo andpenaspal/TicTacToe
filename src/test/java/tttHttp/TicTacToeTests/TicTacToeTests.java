@@ -11,7 +11,6 @@ import tttHttp.tictactoe.TicTacToe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class TicTacToeTests {
 
@@ -28,7 +27,7 @@ public class TicTacToeTests {
         //Expected
         int[][] expectedBoard = newBoard();
         expectedBoard[0][1] = 2;
-        GameDTO expectedGameDTO = new GameDTO(true, 1, 1, false, false, false, expectedBoard, new ArrayList<Point>());
+        GameDTO expectedGameDTO = new GameDTO(true, 1, 1, false, false, false, expectedBoard, null);
 
         //Actual
         boolean actualMakeMoveReturn = ttt.makeMove(2, 0, 1);
@@ -53,10 +52,10 @@ public class TicTacToeTests {
             expectedBoard[1][2] = 2;
             expectedBoard[0][1] = 1;
             expectedBoard[2][2] = 2;
-            List<Point> winningCombination = new ArrayList<Point>();
-            winningCombination.add(new Point(0, 2));
-            winningCombination.add(new Point(1, 2));
-            winningCombination.add(new Point(2, 2));
+            int[][] winningCombination = new int[3][];
+            winningCombination[0] = new int[]{0,2};
+            winningCombination[1] = new int[]{1,2};
+            winningCombination[2] = new int[]{2,2};
             GameDTO expectedGameDTO = new GameDTO(true,2, 5, true, false, false, expectedBoard, winningCombination);
 
             //Actual
@@ -80,10 +79,10 @@ public class TicTacToeTests {
             expectedBoard[1][2] = 2;
             expectedBoard[0][1] = 1;
             expectedBoard[1][0] = 2;
-            List<Point> winningCombination = new ArrayList<Point>();
-            winningCombination.add(new Point(1, 1));
-            winningCombination.add(new Point(1, 2));
-            winningCombination.add(new Point(1, 0));
+            int[][] winningCombination = new int[3][];
+            winningCombination[0] = new int[]{1,0};
+            winningCombination[1] = new int[]{1,1};
+            winningCombination[2] = new int[]{1,2};
             GameDTO expectedGameDTO = new GameDTO(true, 2, 5, true, false, false, expectedBoard, winningCombination);
 
             //Actual
@@ -107,10 +106,10 @@ public class TicTacToeTests {
             expectedBoard[1][1] = 2;
             expectedBoard[0][1] = 1;
             expectedBoard[2][2] = 2;
-            List<Point> winningCombination = new ArrayList<Point>();
-            winningCombination.add(new Point(0, 0));
-            winningCombination.add(new Point(1, 1));
-            winningCombination.add(new Point(2, 2));
+            int[][] winningCombination = new int[3][];
+            winningCombination[0] = new int[]{0,0};
+            winningCombination[1] = new int[]{1,1};
+            winningCombination[2] = new int[]{2,2};
             GameDTO expectedGameDTO = new GameDTO(true, 2, 5, true, false, false, expectedBoard, winningCombination);
 
             //Actual
@@ -135,10 +134,10 @@ public class TicTacToeTests {
             expectedBoard[1][1] = 1;
             expectedBoard[2][2] = 2;
             expectedBoard[2][0] = 1;
-            List<Point> winningCombination = new ArrayList<Point>();
-            winningCombination.add(new Point(0, 2));
-            winningCombination.add(new Point(1, 1));
-            winningCombination.add(new Point(2, 0));
+            int[][] winningCombination = new int[3][];
+            winningCombination[0] = new int[]{0,2};
+            winningCombination[1] = new int[]{1,1};
+            winningCombination[2] = new int[]{2,0};
             GameDTO expectedGameDTO = new GameDTO(true, 1, 6, true, false, false, expectedBoard, winningCombination);
 
             //Actual

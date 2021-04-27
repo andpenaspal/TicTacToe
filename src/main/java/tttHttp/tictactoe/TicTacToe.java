@@ -1,9 +1,12 @@
 package tttHttp.tictactoe;
 
 import tttHttp.DTO.GameDTO;
+import tttHttp.httpExceptions.HTTPException;
 import tttHttp.models.Game;
 import tttHttp.models.Point;
+import tttHttp.utils.ExceptionsEnum;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -191,7 +194,25 @@ public class TicTacToe {
 
     //Method used only in JUnit Tests
     public GameDTO getGameDTOBasicInfo(){
-        return new GameDTO(gameStarted, turn, turnCounter, winner, draw, surrendered, board, winningCombination);
+        int[][] winningCombination2Dint = get2DIntFromListPoints(winningCombination);
+        return new GameDTO(gameStarted, turn, turnCounter, winner, draw, surrendered, board, winningCombination2Dint);
+    }
+
+    //Helper function for getGameDTOBasicInfo
+    private int[][] get2DIntFromListPoints(List<Point> winningCombination) {
+        if(winningCombination.isEmpty() || winningCombination == null) return null;
+        int[][] int2D = new int[3][2];
+        Iterator<Point> iter = winningCombination.iterator();
+        for(int i = 0; i < int2D.length; i++){
+            if(iter.hasNext()){
+                Point p = iter.next();
+                int2D[i][0] = p.getMoveCol();
+                int2D[i][1] = p.getMoveRow();
+            }else{
+                //TODO: Log Exception
+            }
+        }
+        return int2D;
     }
 
 }
