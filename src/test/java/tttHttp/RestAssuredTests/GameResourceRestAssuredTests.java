@@ -298,7 +298,6 @@ public class GameResourceRestAssuredTests {
     class Post{
 
         @Test
-        @Disabled
         @DisplayName("New Game")
         void newGame(){
 
@@ -328,7 +327,6 @@ public class GameResourceRestAssuredTests {
         }
 
         @Test
-        @Disabled
         @DisplayName("New Game Second Player")
         void newGameSecondPlayer(){
 
@@ -348,7 +346,7 @@ public class GameResourceRestAssuredTests {
                     .body("gameId", equalTo(3),
                             "playerNumber", equalTo(2),
                             "gameStarted", is(true),
-                            "turn", equalTo(4),
+                            "turn", equalTo(2),
                             "turnCounter", equalTo(0),
                             "winner", is(false),
                             "draw", is(false),
