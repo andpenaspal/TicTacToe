@@ -1,10 +1,13 @@
 package tttHttp.RestAssuredTests;
 
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tttHttp.models.Point;
 import tttHttp.utils.ExceptionsEnum;
 import tttHttp.utilsTests.DDBBTestingDataLoader;
@@ -63,10 +66,9 @@ public class GameResourceRestAssuredTests {
         - No authenticated
         - No authorized
         - No started Game
-        - On surrendered
-        - On draw
+        - On DrawS/Surrendered
+        - Incorrect Turn
         - On winner
-        - On wrong turn
     - Delete:
         - Happy Path on turn
         - Happy Path on no Turn
@@ -314,7 +316,7 @@ public class GameResourceRestAssuredTests {
                         .assertThat()
                         .statusCode(HttpStatus.SC_CREATED)
                         .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaGameDTO.json"))
-                        .body("gameId", equalTo(5),
+                        .body("gameId", equalTo(14),
                                 "playerNumber", equalTo(1),
                                 "gameStarted", is(false),
                                 "turn", equalTo(0),
@@ -345,6 +347,7 @@ public class GameResourceRestAssuredTests {
                     .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaGameDTO.json"))
                     .body("gameId", equalTo(3),
                             "playerNumber", equalTo(2),
+                            "remotePlayerName", equalTo("Andres3"),
                             "gameStarted", is(true),
                             "turn", equalTo(2),
                             "turnCounter", equalTo(0),
@@ -354,6 +357,441 @@ public class GameResourceRestAssuredTests {
                             "board", equalTo(expectedBoard))
                     .log().ifValidationFails();
         }
+
+        @Test
+        @DisplayName("New Game no authenticated PLayer")
+        void newGameNoAuthenticatedPLayer(){
+            Header header = new Header("playerToken", "Incorrect");
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .post("{playerId}/games", 4)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.NO_AUTHENTICATED.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+    }
+    /*
+    - Patch:
+        - Happy Path Make Move
+        - Happy Path Make Draw Move
+        - Happy Path Make Winning Move
+        - No authenticated
+        - No authorized
+        - No started Game
+        - On draw/surrendered/Incorrect Turn
+        - On winner
+     */
+    @Nested
+    class Patch{
+
+        @Test
+        @DisplayName("Make Move")
+        void makeMove(){
+            List<List<Integer>> expectedBoard = getExpectedBoard(new int[][]{{2,1,2},{0,1,0},{0,0,2}});
+
+            Header header = new Header("playerToken", "Token2");
+            String move = "{\"moveCol\":\"0\", \"moveRow\": \"2\"}";
+
+            RestAssured
+                    .given()
+                        .header(header)
+                        .contentType(ContentType.JSON)
+                        .body(move)
+                    .when()
+                        .patch("{playerId}/games/{gameId}", 2, 5)
+                    .then()
+                        .assertThat()
+                        .statusCode(HttpStatus.SC_ACCEPTED)
+                        .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaGameDTO.json"))
+                        .body("gameId", equalTo(5),
+                                "playerNumber", equalTo(2),
+                                "remotePlayerName", equalTo("Andres1"),
+                                "gameStarted", is(true),
+                                "turn", equalTo(1),
+                                "turnCounter", equalTo(5),
+                                "winner", is(false),
+                                "draw", is(false),
+                                "surrendered", is(false),
+                                "board", equalTo(expectedBoard))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Make Draw Move")
+        void makeDrawMove(){
+            List<List<Integer>> expectedBoard = getExpectedBoard(new int[][]{{2,2,1},{1,1,2},{2,1,2}});
+
+            Header header = new Header("playerToken", "Token2");
+            String move = "{\"moveCol\":\"2\", \"moveRow\": \"2\"}";
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .contentType(ContentType.JSON)
+                    .body(move)
+                    .when()
+                    .patch("{playerId}/games/{gameId}", 2, 6)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_ACCEPTED)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaGameDTO.json"))
+                    .body("gameId", equalTo(6),
+                            "playerNumber", equalTo(2),
+                            "remotePlayerName", equalTo("Andres1"),
+                            "gameStarted", is(true),
+                            "turn", equalTo(1),
+                            "turnCounter", equalTo(9),
+                            "winner", is(false),
+                            "draw", is(true),
+                            "surrendered", is(false),
+                            "board", equalTo(expectedBoard))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Make Winning Move")
+        void makeWinningMove(){
+            List<List<Integer>> expectedBoard = getExpectedBoard(new int[][]{{2,1,1},{0,2,0},{0,0,2}});
+            List<List<Integer>> expectedWinningCombination = getExpectedWinningCombination(new int[][]{{0,0},{1,1},{2,2}});
+
+            Header header = new Header("playerToken", "Token2");
+            String move = "{\"moveCol\":\"2\", \"moveRow\": \"2\"}";
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .contentType(ContentType.JSON)
+                    .body(move)
+                    .when()
+                    .patch("{playerId}/games/{gameId}", 2, 7)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_ACCEPTED)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaGameDTO.json"))
+                    .body("gameId", equalTo(7),
+                            "playerNumber", equalTo(2),
+                            "remotePlayerName", equalTo("Andres1"),
+                            "gameStarted", is(true),
+                            "turn", equalTo(2),
+                            "turnCounter", equalTo(5),
+                            "winner", is(true),
+                            "draw", is(false),
+                            "surrendered", is(false),
+                            "board", equalTo(expectedBoard),
+                            "winningCombination", equalTo(expectedWinningCombination))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Make Move No Authenticated")
+        void makeMoveNoAuthenticated(){
+            Header header = new Header("playerToken", "incorrect");
+            String move = "{\"moveCol\":\"2\", \"moveRow\": \"2\"}";
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .contentType(ContentType.JSON)
+                    .body(move)
+                    .when()
+                    .patch("{playerId}/games/{gameId}", 1, 1)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.NO_AUTHENTICATED.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Make Move No Authorized")
+        void makeMoveNoAuthorized(){
+            Header header = new Header("playerToken", "Token4");
+            String move = "{\"moveCol\":\"2\", \"moveRow\": \"2\"}";
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .contentType(ContentType.JSON)
+                    .body(move)
+                    .when()
+                    .patch("{playerId}/games/{gameId}", 4, 1)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_FORBIDDEN)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.NO_AUTHORIZED.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+
+        @ParameterizedTest
+        @DisplayName("Make Move On Draw/Surrendered")
+        @ValueSource( ints = {8, 9})
+        void makeMoveOnDrawSurrendered(int gameId){
+            Header header = new Header("playerToken", "Token1");
+            String move = "{\"moveCol\":\"2\", \"moveRow\": \"2\"}";
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .contentType(ContentType.JSON)
+                    .body(move)
+                    .when()
+                    .patch("{playerId}/games/{gameId}", 1, gameId)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_CONFLICT)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.INVALID_GAME_CONDITIONS.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Make Move On Incorrect Turn")
+        void makeMoveOnIncorrectTurn(){
+            Header header = new Header("playerToken", "Token1");
+            String move = "{\"moveCol\":\"2\", \"moveRow\": \"2\"}";
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .contentType(ContentType.JSON)
+                    .body(move)
+                    .when()
+                    .patch("{playerId}/games/{gameId}", 1, 2)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_CONFLICT)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.NO_CORRECT_TURN.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Make Move On Won Game")
+        void makeMoveOnWon(){
+            Header header = new Header("playerToken", "Token2");
+            String move = "{\"moveCol\":\"2\", \"moveRow\": \"2\"}";
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .contentType(ContentType.JSON)
+                    .body(move)
+                    .when()
+                    .patch("{playerId}/games/{gameId}", 2, 2)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_CONFLICT)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.INVALID_GAME_CONDITIONS.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+    }
+
+    @Nested
+    class Delete{
+
+        /*
+        - Delete:
+        - Happy Path on turn
+        - Happy Path on no Turn
+        - Happy Path No started Game
+        - No authenticated
+        - No authorized
+        - On surrendered
+        - On draw
+        - On winner
+         */
+
+        @Test
+        @DisplayName("Delete On Turn")
+        void deleteOnTurn(){
+            List<List<Integer>> expectedBoard = getExpectedBoard(new int[][]{{2,1,0},{0,1,0},{0,0,2}});
+
+            Header header = new Header("playerToken", "Token6");
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .delete("{playerId}/games/{gameId}", 6, 11)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_ACCEPTED)
+                    .log().ifValidationFails();
+
+            //Verify action done with a Get Request
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .get("{playerId}/games/{gameId}", 6, 11)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_OK)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaGameDTO.json"))
+                    .body("gameId", equalTo(11),
+                            "playerNumber", equalTo(2),
+                            "remotePlayerName", equalTo("Andres5"),
+                            "gameStarted", is(true),
+                            "turn", equalTo(2),
+                            "turnCounter", equalTo(4),
+                            "winner", is(false),
+                            "draw", is(false),
+                            "surrendered", is(true),
+                            "board", equalTo(expectedBoard))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Delete On Incorrect Turn")
+        void deleteOnIncorrectTurn(){
+            List<List<Integer>> expectedBoard = getExpectedBoard(new int[][]{{2,1,0},{0,1,0},{0,0,2}});
+
+            Header header = new Header("playerToken", "Token5");
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .delete("{playerId}/games/{gameId}", 5, 12)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_ACCEPTED)
+                    .log().ifValidationFails();
+
+            //Verify action done with a Get Request
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .get("{playerId}/games/{gameId}", 5, 12)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_OK)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaGameDTO.json"))
+                    .body("gameId", equalTo(12),
+                            "playerNumber", equalTo(1),
+                            "remotePlayerName", equalTo("Andres6"),
+                            "gameStarted", is(true),
+                            "turn", equalTo(1),
+                            "turnCounter", equalTo(4),
+                            "winner", is(false),
+                            "draw", is(false),
+                            "surrendered", is(true),
+                            "board", equalTo(expectedBoard))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Delete No Started Game")
+        void deleteNoStartedGame(){
+            Header header = new Header("playerToken", "Token5");
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .delete("{playerId}/games/{gameId}", 5, 13)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_ACCEPTED)
+                    .log().ifValidationFails();
+
+            //Verify action done with a Get Request
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .get("{playerId}/games/{gameId}", 5, 13)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_FORBIDDEN)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.NO_AUTHORIZED.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Delete No Authenticated")
+        void deleteNoAuthenticated(){
+            Header header = new Header("playerToken", "incorrect");
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .delete("{playerId}/games/{gameId}", 5, 12)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_UNAUTHORIZED)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.NO_AUTHENTICATED.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Delete No Authorized")
+        void deleteNoAuthorized(){
+            Header header = new Header("playerToken", "Token5");
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .delete("{playerId}/games/{gameId}", 5, 1)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_FORBIDDEN)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.NO_AUTHORIZED.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+
+        @ParameterizedTest
+        @DisplayName("Delete On Draw/Surrendered")
+        @ValueSource( ints = {8, 9})
+        void deleteOnDrawSurrendered(int gameId){
+            Header header = new Header("playerToken", "Token1");
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .delete("{playerId}/games/{gameId}", 1, gameId)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_CONFLICT)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.INVALID_GAME_CONDITIONS.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+
+        @Test
+        @DisplayName("Delete On Won Game")
+        void deleteOnWon(){
+            Header header = new Header("playerToken", "Token2");
+
+            RestAssured
+                    .given()
+                    .header(header)
+                    .when()
+                    .delete("{playerId}/games/{gameId}", 2, 2)
+                    .then()
+                    .assertThat()
+                    .statusCode(HttpStatus.SC_CONFLICT)
+                    .body(matchesJsonSchemaInClasspath("JsonSchemas/JsonSchemaErrorMessageDTO.json"))
+                    .body("errorMessage", equalTo(ExceptionsEnum.INVALID_GAME_CONDITIONS.getExceptionMessage()))
+                    .log().ifValidationFails();
+        }
+
     }
 
     //Helper functions
