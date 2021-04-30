@@ -6,20 +6,21 @@
 ## Summary
 Stateless RestFul Api using HTTP Protocol holding the logic of the TicTacToe Game. 
 The final version will be a JAX-RX (Jakarta) & Jersey implementation with JUnit 
-and RestAssured (BDD approach, Hamcrest, JsonSchema) testing, connected to a MySQL Database (DAO Model), with custom (mapped) exceptions 
+and RestAssured (BDD approach, Hamcrest, JsonSchema) testing, connected to a MySQL 
+Database (DAO Model), with custom (mapped) exceptions, thread-safe (JDBC Transaction control and MySQL-Locks) 
 and Swagger documentation.
 
 #### Completed
 * TicTacToe Logic
 * Junit Tests for TicTacToe
 * End Points
-* Controllers (Basic Behaviour)
-#### TODO
 * MySQL DataBase
 * DAOs
 * Controllers (link to DDBB)
 * Custom Mapped Exceptions
 * RestAssured Testing
+#### TODO
+* Logger
 * Swagger
 
 ## Technologies
