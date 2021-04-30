@@ -130,35 +130,6 @@ public class MySQLGameDAO implements GameDAO {
         return playerName;
     }
 
-    /*
-    @Override
-    public Integer insertPlayerIntoGame(int playerId) throws DAODMLException, DAOException{
-        CallableStatement statement = null;
-        int gameIdWithNewPlayer = 0;
-
-        try {
-            //Stored Procedure (playerId, gameId)
-            String ADD_PLAYER_TO_GAME = "{call add_second_player_or_insert_new_game_and_insert_into_playergames(?, ?)}";
-            statement = CONNECTION.prepareCall(ADD_PLAYER_TO_GAME);
-
-            statement.setInt(1, playerId);
-            statement.registerOutParameter(2, Types.INTEGER);
-
-            if(statement.executeUpdate() == 0){
-                //TODO: Log
-                throw new DAODMLException("Problem trying to add Player with Id " + playerId + " to a Game");
-            }else{
-                gameIdWithNewPlayer = statement.getInt(2);
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }finally {
-            closeStatement(statement);
-        }
-
-        return gameIdWithNewPlayer;
-    }
-     */
     @Override
     public Integer insertPlayerIntoGame(int playerId) throws DAODMLException, DAOException{
         int gameIdWithNewPlayer = 0;
@@ -221,9 +192,8 @@ public class MySQLGameDAO implements GameDAO {
             //TODO: Log
             try {
                 CONNECTION.rollback();
-                throw new DAOException("Problem trying to Rollback after a problem creating a new Game for Player: " + playerId);
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new DAOException("Problem trying to Rollback after a problem creating a new Game for Player: " + playerId, e);
             }
             throw new DAOException("Problem creating a new Game for Player: " + playerId, throwables);
         }finally {
@@ -244,37 +214,6 @@ public class MySQLGameDAO implements GameDAO {
             makeMove(turn, game, false);
         }
     }
-
-    /*
-    private void makeMove(int playerId, int gameId, Point move, boolean isDraw) throws DAOException, DAOInvalidTurnException,
-            DAOInvalidGameConditionsException, DAOInvalidMoveException, DAODMLException {
-        CallableStatement statement = null;
-
-        //Stored Procedure (gameId, playerId, moveCol, moveRow)
-        String MAKE_DRAW_MOVE = "{call make_draw_move_in_game(?, ?, ?, ?)}";
-        //Stored Procedure (gameId, playerId, moveCol, moveRow)
-        String MAKE_MOVE = "{call make_move_in_game(?, ?, ?, ?)}";
-
-        String correctStatement = isDraw? MAKE_DRAW_MOVE : MAKE_MOVE;
-
-        try {
-            statement = CONNECTION.prepareCall(correctStatement);
-            statement.setInt(1, gameId);
-            statement.setInt(2, playerId);
-            statement.setInt(3, move.getMoveCol());
-            statement.setInt(4, move.getMoveRow());
-
-            if(statement.executeUpdate() == 0) {
-                //TODO: Log
-                throw new DAODMLException("Problem making a move [" + move.getMoveCol() + "," + move.getMoveRow() + "] in game " + gameId +
-                        " " + "by " + playerId);            }
-        } catch (SQLException throwables) {
-            catchMySQLMoveExceptions(playerId, gameId, throwables);
-        }finally {
-            closeStatement(statement);
-        }
-    }
-     */
 
     private void makeMove(int playerId, Game game, boolean isDraw) throws DAOException, DAOInvalidTurnException,
             DAOInvalidGameConditionsException, DAOInvalidMoveException, DAODMLException {
@@ -345,7 +284,7 @@ public class MySQLGameDAO implements GameDAO {
             } catch (SQLException e) {
                 //TODO: Log
                 throw new DAOException("Problem trying to Rollback after a problem trying to update the Game Turn-Variables in the Game: " +
-                        + gameId);
+                        + gameId, e);
             }
             throw new DAOException("Problem trying to update the Game Turn-Variables in the Game :" + gameId, throwables);
         }finally {
@@ -372,60 +311,19 @@ public class MySQLGameDAO implements GameDAO {
             } catch (SQLException e) {
                 //TODO: Log
                 throw new DAOException("Problem trying to Rollback after a problem trying to set Draw in the Game: " +
-                        + gameId);
+                        + gameId, e);
             }
             throw new DAOException("Problem trying to set Draw in the Game :" + gameId, throwables);
         }finally {
             closeStatement(updateGameDrawStatement);
         }
     }
-/*
-    private void winnerMove(int playerId, int gameId, Point move, List<Point> winningCombination) throws DAOException,
-            DAOInvalidTurnException, DAOInvalidGameConditionsException, DAOInvalidMoveException, DAODMLException {
-        CallableStatement statement = null;
-
-        List<Point> oldMovesWinningPoints = new ArrayList<Point>(2);
-        for(Point p : winningCombination){
-            if(!p.equals(move)){
-                oldMovesWinningPoints.add(p);
-            }
-        }
-
-        try {
-            //Stored Procedure (gameId, playerId, moveCol, moveRow, moveColWinnerMove2, moveRowWinnerMove2, moveColWinnerMove3,
-            // moveRowWinnerMove3)
-            String MAKE_WINNER_MOVE = "{call make_winner_move_in_game(?, ?, ?, ?, ?, ?, ?, ?)}";
-            statement = CONNECTION.prepareCall(MAKE_WINNER_MOVE);
-            statement.setInt(1, gameId);
-            statement.setInt(2, playerId);
-            statement.setInt(3, move.getMoveCol());
-            statement.setInt(4, move.getMoveRow());
-            statement.setInt(5, oldMovesWinningPoints.get(0).getMoveCol());
-            statement.setInt(6, oldMovesWinningPoints.get(0).getMoveRow());
-            statement.setInt(7, oldMovesWinningPoints.get(1).getMoveCol());
-            statement.setInt(8, oldMovesWinningPoints.get(1).getMoveRow());
-
-            if(statement.executeUpdate() == 0){
-                //TODO: Log
-                throw new DAODMLException("Problem making a winning move [" + move.getMoveCol() + "," + move.getMoveRow() + "] in game " + gameId +
-                        " " + "by " + playerId);
-            }
-        } catch (SQLException throwables) {
-            catchMySQLMoveExceptions(playerId, gameId, throwables);
-        }finally {
-            closeStatement(statement);
-        }
-    }
-
- */
 
     private void winnerMove(int playerId, Game game) throws DAOInvalidTurnException, DAOInvalidGameConditionsException, DAOException,
             DAOInvalidMoveException, DAODMLException {
         PreparedStatement lockStatement = null;
-        PreparedStatement updateGameStatement = null;
         String lockMakeMove = "SELECT * FROM games LEFT JOIN gamemoves ON games.gameId = gamemoves.gameId WHERE games.gameId = ? FOR " +
                 "UPDATE";
-        String updateGame = "UPDATE games SET turnCounter = ?, winner = true WHERE gameId = ?";
         ResultSet lockResultSet = null;
 
         try {
@@ -439,16 +337,7 @@ public class MySQLGameDAO implements GameDAO {
                 checkCorrectTurn(lockResultSet, playerId);
                 checkGameConditions(lockResultSet);
 
-                //TODO: Different Method
-                updateGameStatement = CONNECTION.prepareStatement(updateGame);
-                updateGameStatement.setInt(1, (lockResultSet.getInt("turnCounter")+1));
-                updateGameStatement.setInt(2, game.getGameId());
-
-                if(updateGameStatement.executeUpdate() == 0){
-                    //TODO: Log
-                    CONNECTION.rollback();
-                    throw new DAOException("Problem Trying to update the Game Turn-Variables in the Game :" + game.getGameId());
-                }
+                updateGameWinVariables(game.getGameId(), lockResultSet.getInt("turnCounter"));
 
                 insertMove(game.getGameId(), playerId, game.getLastInserted());
 
@@ -476,6 +365,35 @@ public class MySQLGameDAO implements GameDAO {
         }
     }
 
+    private void updateGameWinVariables(int gameId, int currentTurnCounter) throws DAOException, DAODMLException {
+        PreparedStatement updateGameStatement = null;
+        String updateGame = "UPDATE games SET turnCounter = ?, winner = true WHERE gameId = ?";
+
+        try{
+            updateGameStatement = CONNECTION.prepareStatement(updateGame);
+            updateGameStatement.setInt(1, (currentTurnCounter+1));
+            updateGameStatement.setInt(2, gameId);
+
+            if(updateGameStatement.executeUpdate() == 0){
+                //TODO: Log
+                CONNECTION.rollback();
+                throw new DAODMLException("Problem Trying to update the Game Win-Variables in the Game :" + gameId);
+            }
+        } catch (SQLException throwables) {
+            try {
+                CONNECTION.rollback();
+            } catch (SQLException e) {
+                //TODO: Log
+                throw new DAOException("Problem trying to Rollback after a problem trying to update Winning variable in the Game: " +
+                        + gameId, e);
+            }
+            //TODO: Log
+            throw new DAOException("Problem trying to update Winning variable in the Game :" + gameId, throwables);
+        }finally {
+            closeStatement(updateGameStatement);
+        }
+    }
+
     private void updateWinMoves(int gameId, List<Point> winningCombination) throws DAOException, DAODMLException {
         PreparedStatement updateOldMovesStatement = null;
         String updateOldMoves = "UPDATE gamemoves SET winningMove = true WHERE gameId = ? AND moveColumn = ? AND moveRow = ?";
@@ -494,7 +412,14 @@ public class MySQLGameDAO implements GameDAO {
                 }
             } catch (SQLException throwables) {
                 //TODO
-                throwables.printStackTrace();
+                try {
+                    CONNECTION.rollback();
+                } catch (SQLException e) {
+                    //TODO: Log
+                    throw new DAOException("Problem trying to Rollback after a problem trying to update the Win Moves in the Game: " +
+                            + gameId, e);
+                }
+                throw new DAOException("Problem trying to update the Win moves in the Game :" + gameId, throwables);
             }finally {
                 closeStatement(updateOldMovesStatement);
             }
@@ -518,7 +443,7 @@ public class MySQLGameDAO implements GameDAO {
         }
     }
 
-    private void insertMove(int gameId, int playerId, Point move) throws DAOException, DAOInvalidMoveException {
+    private void insertMove(int gameId, int playerId, Point move) throws DAOException, DAOInvalidMoveException, DAODMLException {
         PreparedStatement insertMoveStatement = null;
         String insertMoveQuery = "INSERT INTO gamemoves (gameId, moveColumn, moveRow, playerId) VALUES (?,?,?,?)";
 
@@ -533,49 +458,30 @@ public class MySQLGameDAO implements GameDAO {
             if(insertMoveStatement.executeUpdate() == 0){
                 //TODO: log
                 CONNECTION.rollback();
-                throw new DAOException("Problem Trying to insert Moves in the Game: " + gameId);
+                throw new DAODMLException("Problem Trying to insert Moves in the Game: " + gameId);
             }
         } catch (SQLException throwables) {
             //TODO
             if(throwables.getSQLState().equalsIgnoreCase("23000")) throw new DAOInvalidMoveException();
-            throwables.printStackTrace();
+            try {
+                CONNECTION.rollback();
+            } catch (SQLException e) {
+                //TODO: Log
+                throw new DAOException("Problem trying to Rollback after a problem trying to insert Moves in the Game: " +
+                        + gameId, e);
+            }
+            //TODO: Log
+            throw new DAOException("Problem trying to insert Moves in the Game :" + gameId, throwables);
         }finally {
             closeStatement(insertMoveStatement);
         }
     }
 
-    /*
     @Override
-    public void deletePlayerFromGame(Game game, Player player) throws DAODMLException, DAOInvalidMoveException, DAOException, DAOInvalidTurnException, DAOInvalidGameConditionsException {
-        CallableStatement statement = null;
-
-        try {
-            //Stored Procedure (gameId, playerId)
-            String SET_SURRENDER = "{call set_surrendered_in_game(?, ?)}";
-            statement = CONNECTION.prepareCall(SET_SURRENDER);
-            statement.setInt(1, game.getGameId());
-            statement.setInt(2, player.getPlayerId());
-
-            if(statement.executeUpdate() == 0){
-                //TODO: Log
-                throw new DAODMLException("Problem setting surrendered on Game " + game.getGameId() + "by " + player.getPlayerId());
-            }
-        } catch (SQLException throwables) {
-            catchMySQLMoveExceptions(player.getPlayerId(), game.getGameId(), throwables);
-        }finally {
-            closeStatement(statement);
-        }
-    }
-
-     */
-
-    @Override
-    public void deletePlayerFromGame(Game game, Player player) throws DAOException, DAOInvalidGameConditionsException {
+    public void deletePlayerFromGame(Game game, Player player) throws DAOException, DAOInvalidGameConditionsException, DAODMLException {
         PreparedStatement lockStatement = null;
-        PreparedStatement updateGameSurrenderStatement = null;
         String lockMakeMove = "SELECT * FROM games LEFT JOIN gamemoves ON games.gameId = gamemoves.gameId WHERE games.gameId = ? FOR " +
                 "UPDATE";
-        String updateGameSurrender = "UPDATE games SET surrendered = true, turn = ? WHERE gameId = ?";
         ResultSet lockResultSet = null;
 
         try {
@@ -588,21 +494,13 @@ public class MySQLGameDAO implements GameDAO {
             if (lockResultSet.next()) {
                 checkGameConditions(lockResultSet);
 
-                updateGameSurrenderStatement = CONNECTION.prepareStatement(updateGameSurrender);
-                updateGameSurrenderStatement.setInt(1, player.getPlayerId());
-                updateGameSurrenderStatement.setInt(2, game.getGameId());
+                updateSurrenderedGame(game.getGameId(), player.getPlayerId());
 
-                if(updateGameSurrenderStatement.executeUpdate() == 0){
-                    //TODO: Log
-                    CONNECTION.rollback();
-                    throw new DAOException("Problem Trying to set Surrendered for Player Id: " + player.getPlayerId() + " in Game: " + game.getGameId());
-                }else{
-                    CONNECTION.commit();
-                }
+                CONNECTION.commit();
             }else{
                 //TODO: Log
                 CONNECTION.rollback();
-                throw new DAOException("Problem Trying to access the Game: " + game.getGameId());
+                throw new DAODMLException("Problem Trying to access the Game: " + game.getGameId());
             }
         } catch (SQLException throwables) {
             //TODO: Log
@@ -618,6 +516,34 @@ public class MySQLGameDAO implements GameDAO {
             restoreAutoCommit();
             closeResultSet(lockResultSet);
             closeStatement(lockStatement);
+        }
+    }
+
+    private void updateSurrenderedGame(int gameId, int playerId) throws DAOException, DAODMLException {
+        PreparedStatement updateGameSurrenderStatement = null;
+        String updateGameSurrender = "UPDATE games SET surrendered = true, turn = ? WHERE gameId = ?";
+
+        try{
+            updateGameSurrenderStatement = CONNECTION.prepareStatement(updateGameSurrender);
+            updateGameSurrenderStatement.setInt(1, playerId);
+            updateGameSurrenderStatement.setInt(2, gameId);
+
+            if(updateGameSurrenderStatement.executeUpdate() == 0){
+                //TODO: Log
+                CONNECTION.rollback();
+                throw new DAODMLException("Problem Trying to set Surrendered for Player Id: " + playerId + " in Game: " + gameId);
+            }
+        } catch (SQLException throwables) {
+            try {
+                CONNECTION.rollback();
+            } catch (SQLException e) {
+                //TODO: Log
+                throw new DAOException("Problem trying to Rollback after a problem trying to update Surrender variable in the Game: " +
+                        + gameId, e);
+            }
+            //TODO: Log
+            throw new DAOException("Problem trying to update Surrender variable in the Game :" + gameId, throwables);
+        }finally {
             closeStatement(updateGameSurrenderStatement);
         }
     }
@@ -651,80 +577,4 @@ public class MySQLGameDAO implements GameDAO {
             throwables.printStackTrace();
         }
     }
-
-    private void catchMySQLMoveExceptions(int playerId, int gameId, SQLException throwables) throws DAOInvalidMoveException, DAOInvalidGameConditionsException, DAOInvalidTurnException, DAOException {
-        switch (throwables.getSQLState()) {
-            case "23000":
-                throw new DAOInvalidMoveException(throwables.getMessage(), throwables);
-            case "45000":
-                throw new DAOInvalidGameConditionsException(throwables.getMessage(), throwables);
-            case "45001":
-                throw new DAOInvalidTurnException(throwables.getMessage(), throwables);
-            default:
-                throw new DAOException("Problem trying to modify data in the DDBB", throwables);
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            MySQLGameDAO gameDAO = new MySQLGameDAO(
-                    DriverManager.getConnection("jdbc:mysql://localhost/tictactoe", "root", ""));
-            Game game = new Game(1, 1, "a", null, null, true, 0, 0, false, false, false, new int[][]{{0},{0},{0}}, new Point(0,0), null);
-            Player player = new Player(2, "", "", null);
-            gameDAO.deletePlayerFromGame(game, player);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        } catch (DAOException e) {
-            e.printStackTrace();
-        } catch (DAOInvalidGameConditionsException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /*
-    public static void main(String[] args) {
-        try {
-            MySQLGameDAO gameDAO = new MySQLGameDAO(
-                    DriverManager.getConnection("jdbc:mysql://localhost/tictactoe", "root", ""));
-            //Game game = gameDAO.getGame(10);
-            List<Point> winnerMoves = new ArrayList<>();
-            winnerMoves.add(new Point(0,0));
-            winnerMoves.add(new Point(1,1));
-            winnerMoves.add(new Point(2,2));
-            Game game = null;
-            try {
-                //game = gameDAO.winnerMove(10, 10, new Point(0, 0), winnerMoves);
-                game = gameDAO.makeMove(11, 11, new Point(2,0));
-            } catch (DAODataNotFoundException e) {
-                e.printStackTrace();
-            } catch (DAOException e) {
-                e.printStackTrace();
-            } catch (DAODMLException e) {
-                e.printStackTrace();
-            } catch (DAOInvalidGameConditionsException e) {
-                e.printStackTrace();
-            } catch (DAOInvalidMoveException e) {
-                e.printStackTrace();
-            } catch (DAOInvalidTurnException e) {
-                e.printStackTrace();
-            }
-            System.out.println(game.toString());
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-    }
-
-     */
-
-
-/*
-TODO: Refactor para recortar los metodos (Continuar en el inserWinMove). Cambiar los Throws a DAODMLException en los If==0. Revisar que
- en los metodos auxiliares se hagan bien los close y los exception. Ordenar los metodos. Borrar de los Exception cuando no se necesita
- que solo sea mensaje sin el Throwable
- */
-
-
-
-
-
 }
