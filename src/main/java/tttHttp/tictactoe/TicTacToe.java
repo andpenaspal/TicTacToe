@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 public class TicTacToe {
     private int player1Id;
-    private int player2Id;
+    private Integer player2Id;
     private boolean gameStarted;
     private int turn;
     private int turnCounter;
@@ -23,7 +23,7 @@ public class TicTacToe {
     private int[][] board;
     private List<Point> winningCombination;
 
-    public TicTacToe(int player1Id, int player2Id, boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw,
+    public TicTacToe(int player1Id, Integer player2Id, boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw,
                      boolean surrendered,
                      int[][] board,
                      List<Point> winningCombination) {
@@ -41,7 +41,7 @@ public class TicTacToe {
 
     //TODO: exceptions for TicTacToe on conditions and invalid move
     public boolean makeMove(int playerId, int tileCol, int tileRow){
-        if(!checkGameConditions(playerId) || !isValidMove(tileCol, tileRow)) return false;
+        if(!hasStarted() || !checkGameConditions() || !isCorrectTurn(playerId) || !isValidMove(tileCol, tileRow)) return false;
         board[tileCol][tileRow] = turn;
         winner = checkWinner(tileCol, tileRow);
         if(!winner) turn = (turn == player1Id? player2Id : player1Id);
@@ -50,8 +50,16 @@ public class TicTacToe {
         return true;
     }
 
-    public boolean checkGameConditions(int playerId){
-        return (gameStarted && (playerId == turn) && !isWinner() && !isDraw() && !surrendered);
+    public boolean hasStarted(){
+        return gameStarted;
+    }
+
+    public boolean checkGameConditions(){
+        return (!isWinner() && !isDraw() && !surrendered);
+    }
+
+    public boolean isCorrectTurn(int playerId){
+        return (turn == playerId);
     }
 
     public boolean isValidMove(int tileCol, int tileRow){
