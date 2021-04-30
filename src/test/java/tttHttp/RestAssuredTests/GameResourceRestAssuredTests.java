@@ -3,12 +3,10 @@ package tttHttp.RestAssuredTests;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
-import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import tttHttp.models.Point;
 import tttHttp.utils.ExceptionsEnum;
 import tttHttp.utilsTests.DDBBTestingDataLoader;
 
@@ -17,12 +15,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 public class GameResourceRestAssuredTests {
 
@@ -36,14 +31,12 @@ public class GameResourceRestAssuredTests {
             e.printStackTrace();
         }
     }
-/*
+
     @AfterAll
     static void tearDown(){
         DDBBTestingDataLoader.loadDDBBTestingData(PlayerResourceRestAssuredTests.class.getResource("/DDBBTestingSQL" +
                 "/DDBBTestingDataTearDown.sql").getFile());
     }
-
- */
 
     /*
     Tests for Games:
@@ -289,13 +282,6 @@ public class GameResourceRestAssuredTests {
         }
     }
 
-    /*
-    - Post:
-        - Happy Path new Game
-        - Happy Path adding Second Player
-        - No authenticated
-     */
-
     @Nested
     class Post{
 
@@ -376,17 +362,7 @@ public class GameResourceRestAssuredTests {
                     .log().ifValidationFails();
         }
     }
-    /*
-    - Patch:
-        - Happy Path Make Move
-        - Happy Path Make Draw Move
-        - Happy Path Make Winning Move
-        - No authenticated
-        - No authorized
-        - No started Game
-        - On draw/surrendered/Incorrect Turn
-        - On winner
-     */
+
     @Nested
     class Patch{
 
@@ -597,18 +573,6 @@ public class GameResourceRestAssuredTests {
 
     @Nested
     class Delete{
-
-        /*
-        - Delete:
-        - Happy Path on turn
-        - Happy Path on no Turn
-        - Happy Path No started Game
-        - No authenticated
-        - No authorized
-        - On surrendered
-        - On draw
-        - On winner
-         */
 
         @Test
         @DisplayName("Delete On Turn")
