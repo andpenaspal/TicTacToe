@@ -204,14 +204,17 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public void update(Game game) throws DAOException, DAOInvalidTurnException, DAOInvalidGameConditionsException, DAOInvalidMoveException, DAODMLException {
-        //Switch Turn back for validation (already changed in GameController)
-        int turn = game.getTurn() == game.getPlayer1Id()? game.getPlayer2Id() : game.getPlayer1Id();
-        if(game.isWinner()){
-            winnerMove(turn, game);
-        }else if(game.isDraw()) {
-            makeMove(turn, game, true);
-        } else{
-            makeMove(turn, game, false);
+
+        if(game.isWinner()) {
+            winnerMove(game.getTurn(), game);
+        }else {
+            //Switch Turn back for validation (already changed in GameController). Not on Winner, as the turn does not change there
+            int turn = game.getTurn() == game.getPlayer1Id()? game.getPlayer2Id() : game.getPlayer1Id();
+            if (game.isDraw()) {
+                makeMove(turn, game, true);
+            } else {
+                makeMove(turn, game, false);
+            }
         }
     }
 
@@ -494,7 +497,11 @@ public class MySQLGameDAO implements GameDAO {
             if (lockResultSet.next()) {
                 checkGameConditions(lockResultSet);
 
-                updateSurrenderedGame(game.getGameId(), player.getPlayerId());
+                if(lockResultSet.getBoolean("gameStarted")){
+                    updateSurrenderedGame(game.getGameId(), player.getPlayerId());
+                }else{
+                    deleteSurrenderedGame(game.getGameId());
+                }
 
                 CONNECTION.commit();
             }else{
@@ -545,6 +552,33 @@ public class MySQLGameDAO implements GameDAO {
             throw new DAOException("Problem trying to update Surrender variable in the Game :" + gameId, throwables);
         }finally {
             closeStatement(updateGameSurrenderStatement);
+        }
+    }
+
+    private void deleteSurrenderedGame(int gameId) throws DAODMLException, DAOException {
+        PreparedStatement deleteSurrenderedGameStatement = null;
+        String deleteSurrenderedGame = "DELETE FROM games WHERE gameId = ?";
+
+        try{
+            deleteSurrenderedGameStatement = CONNECTION.prepareStatement(deleteSurrenderedGame);
+            deleteSurrenderedGameStatement.setInt(1, gameId);
+
+            if(deleteSurrenderedGameStatement.executeUpdate() == 0){
+                //TODO: Log
+                CONNECTION.rollback();
+                throw new DAODMLException("Problem Trying to delete Game: " + gameId + " on Surrender");
+            }
+        } catch (SQLException throwables) {
+            try {
+                CONNECTION.rollback();
+            } catch (SQLException e) {
+                //TODO: Log
+                throw new DAOException("Problem trying to Rollback after a problem trying to delete Game: " + gameId + " on Surrender", e);
+            }
+            //TODO: Log
+            throw new DAOException("Problem Trying to delete Game: " + gameId + " on Surrender", throwables);
+        }finally {
+            closeStatement(deleteSurrenderedGameStatement);
         }
     }
 
