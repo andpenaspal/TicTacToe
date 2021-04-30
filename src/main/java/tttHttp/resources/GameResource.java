@@ -46,8 +46,7 @@ public class GameResource {
         String playerToken = headers.getHeaderString("playerToken");
         GameDTO gameDTO = gameController.makeMove(playerId, playerToken, gameId, gameMove);
         return Response
-                //.accepted(gameDTO)
-                .accepted(gameMove)
+                .accepted(gameDTO)
                 .build();
     }
 
