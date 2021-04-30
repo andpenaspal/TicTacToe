@@ -1,5 +1,6 @@
 package tttHttp.controllers;
 
+import com.mysql.cj.util.TestUtils;
 import tttHttp.DAO.DAOManager;
 import tttHttp.DAO.MySQL.MySQLDAOManager;
 import tttHttp.DAO.exceptions.*;
@@ -112,7 +113,9 @@ public class GameController {
         ticTacToe = new TicTacToe(game.getPlayer1Id(), game.getPlayer2Id(), game.isGameStarted(), game.getTurn(),
                 game.getTurnCounter(), game.isWinner(), game.isDraw(), game.isSurrendered(), game.getBoard(), game.getWinningCombination());
 
-        checkGameConditions(playerId, ticTacToe);
+        hasStarted(ticTacToe);
+        isCorrectTurn(playerId, ticTacToe);
+        checkGameConditions(ticTacToe);
         isValidMove(gameMove, ticTacToe);
 
         ticTacToe.makeMove(playerId, gameMove.getMoveCol(), gameMove.getMoveRow());
@@ -138,7 +141,7 @@ public class GameController {
         ticTacToe = new TicTacToe(game.getPlayer1Id(), game.getPlayer2Id(), game.isGameStarted(), game.getTurn(),
                 game.getTurnCounter(), game.isWinner(), game.isDraw(), game.isSurrendered(), game.getBoard(), game.getWinningCombination());
 
-        checkGameConditions(playerId, ticTacToe);
+        checkGameConditions(ticTacToe);
 
         game.setSurrendered(true);
         game.setTurn(playerId);
@@ -185,8 +188,16 @@ public class GameController {
         if(!player.getGamesIds().contains(gameId)) throw new HTTPException(ExceptionsEnum.NO_AUTHORIZED);
     }
 
-    private void checkGameConditions(int playerId, TicTacToe ticTacToe){
-        if(!ticTacToe.checkGameConditions(playerId)) throw new HTTPException(ExceptionsEnum.INVALID_GAME_CONDITIONS);
+    private void hasStarted(TicTacToe ticTacToe){
+        if(!ticTacToe.hasStarted()) throw new HTTPException(ExceptionsEnum.INVALID_GAME_CONDITIONS);
+    }
+
+    private void checkGameConditions(TicTacToe ticTacToe){
+        if(!ticTacToe.checkGameConditions()) throw new HTTPException(ExceptionsEnum.INVALID_GAME_CONDITIONS);
+    }
+
+    private void isCorrectTurn(int playerId, TicTacToe ticTacToe){
+        if(!ticTacToe.isCorrectTurn(playerId)) throw new HTTPException(ExceptionsEnum.NO_CORRECT_TURN);
     }
 
     private GameDTO getFullGameDTO(int playerId, Game game){
@@ -249,6 +260,7 @@ public class GameController {
 
     public static void main(String[] args) {
         GameController gameController = new GameController();
-        gameController.newGame(3, "Token3");
+
+        gameController.surrender(5, "Token5", 13);
     }
 }
