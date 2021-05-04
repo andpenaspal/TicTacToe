@@ -1,0 +1,57 @@
+<configuration>
+    <property name="Directory" value="TicTacToe_Logs" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-30(%yellow(%d{HH:mm:ss.SSS}) %cyan([%thread])) %highlight(%-5level) %green(%logger{36}) - %blue(%-45method{40}) -
+                %msg%n
+                %red(%ex)</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ERR_EX" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${Directory}/%d{yyyy/MM, aux}/err_ex-%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %-45logger{40} - %-45method{40} - L: %-4line - %msg%n %ex %n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ERR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${Directory}/%d{yyyy/MM, aux}/err-%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %-45logger{40} - %-45method{40} - L: %line - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="GEN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${Directory}/%d{yyyy/MM, aux}/gen-%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %-45logger{40} - %-45method{40} - L: %line - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="tttHttp">
+        <appender-ref ref="ERR"/>
+        <appender-ref ref="ERR_EX"/>
+        <appender-ref ref="GEN"/>
+    </logger>
+
+    <root level="trace">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
