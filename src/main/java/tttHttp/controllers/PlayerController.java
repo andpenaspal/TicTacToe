@@ -1,5 +1,7 @@
 package tttHttp.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tttHttp.DAO.DAOManager;
 import tttHttp.DAO.MySQL.MySQLDAOManager;
 import tttHttp.DAO.exceptions.*;
@@ -17,6 +19,7 @@ import java.util.Properties;
 
 public class PlayerController {
 
+    private final Logger LOG = LoggerFactory.getLogger(PlayerController.class);
     private DAOManager daoManager;
 
     public PlayerController(){
@@ -31,7 +34,7 @@ public class PlayerController {
         try {
             daoManager = new MySQLDAOManager(host, port, database, username, password);
         } catch (ClassNotFoundException | DAOException throwables) {
-            //TODO
+            LOG.error("Error connecting to the DDBB", throwables);
             HttpExceptionManager.handleExceptions(throwables);
         }
     }
@@ -70,6 +73,7 @@ public class PlayerController {
         try {
             newPlayerId = daoManager.getPlayerDAO().insert(player);
         } catch (DAOException | DAODMLException e) {
+            LOG.error("Error trying to insert the New Player '{}' in the DDBB", playerName, e);
             HttpExceptionManager.handleExceptions(e);
         }
 
@@ -95,6 +99,7 @@ public class PlayerController {
         try {
             daoManager.getPlayerDAO().update(player);
         } catch (DAODMLException | DAOException | DAOInvalidGameConditionsException | DAOInvalidMoveException | DAOInvalidTurnException e) {
+            LOG.error("Error trying to Update the Player '{}' in the DDBB", playerId, e);
             HttpExceptionManager.handleExceptions(e);
         }
 
@@ -115,6 +120,7 @@ public class PlayerController {
         try {
             daoManager.getPlayerDAO().delete(player);
         } catch (DAOException | DAODMLException e) {
+            LOG.error("Error trying to Delete the Player '{}' in the DDBB", playerId, e);
             HttpExceptionManager.handleExceptions(e);
         }
 
@@ -122,12 +128,15 @@ public class PlayerController {
     }
 
     private Player getPlayerFromDAO(int playerId){
-        if(playerId <= 0) throw new HTTPException(ExceptionsEnum.NOT_FOUND);
+        if(playerId <= 0){
+            LOG.warn("Error Requesting a Player with ID '{}'");
+            throw new HTTPException(ExceptionsEnum.NOT_FOUND);
+        }
         Player player = null;
         try {
             player = daoManager.getPlayerDAO().get(playerId);
         } catch (DAODataNotFoundException | DAOException e) {
-            //TODO: Log?
+            LOG.error("Error trying to Get the Player '{}' from the DDBB", playerId, e);
             HttpExceptionManager.handleExceptions(e);
         }
         return player;
@@ -143,12 +152,14 @@ public class PlayerController {
 
     private void isAuthenticated(String playerToken, String storedPlayerToken){
         if(playerToken == null || !TokenManager.validateToken(playerToken, storedPlayerToken)){
+            LOG.warn("Player not Authenticated. Token provided '{}' vs Token stored '{}'", playerToken, storedPlayerToken);
             throw new HTTPException(ExceptionsEnum.NO_AUTHENTICATED);
         }
     }
 
     private void isCorrectName(String playerName){
         if(playerName.length() < 3 || playerName.length() > 10 || playerName == null){
+            LOG.warn("Name provided '{}' not valid", playerName);
             throw new HTTPException(ExceptionsEnum.INVALID_INPUT);
         }
     }
@@ -157,13 +168,9 @@ public class PlayerController {
         try {
             daoManager.closeConnection();
         } catch (DAOException e) {
-            //TODO: Log?
+            LOG.error("Error trying to Close the Connection to the DDBB", e);
             HttpExceptionManager.handleExceptions(e);
         }
     }
 
-    public static void main(String[] args) {
-        PlayerController playerController = new PlayerController();
-        playerController.getPlayerDTO(1, null);
-    }
 }
