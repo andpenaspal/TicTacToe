@@ -1,5 +1,7 @@
 package tttHttp.DAO.MySQL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tttHttp.DAO.PlayerDAO;
 import tttHttp.DAO.exceptions.DAODMLException;
 import tttHttp.DAO.exceptions.DAODataNotFoundException;
@@ -13,6 +15,7 @@ import java.util.List;
 public class MySQLPlayerDAO implements PlayerDAO {
 
     private final Connection CONNECTION;
+    private final Logger LOG = LoggerFactory.getLogger(MySQLPlayerDAO.class);
 
     public MySQLPlayerDAO(Connection connection) {
         this.CONNECTION = connection;
@@ -37,11 +40,12 @@ public class MySQLPlayerDAO implements PlayerDAO {
             if(resultSet.next()){
                 player = mapResultSetToPlayer(resultSet);
             }else{
+                LOG.warn("Player with ID '{}' not found in the DataBase", playerId);
                 throw new DAODataNotFoundException("Player with ID " + playerId + " not found");
             }
         } catch (SQLException throwables) {
-            //TODO: Log
-            throw new DAOException("Problem trying to get a Player in SQL: " + playerId, throwables);
+            LOG.error("Error trying to get the Player '{}' from the DataBase", playerId, throwables);
+            throw new DAOException("Problem trying to get a Player from the DataBase: " + playerId, throwables);
         }finally {
             closeResultSet(resultSet);
             closeStatement(statement);
@@ -91,7 +95,7 @@ public class MySQLPlayerDAO implements PlayerDAO {
 
             int updateResult = statement.executeUpdate();
             if(updateResult == 0){
-                //TODO: Log
+                LOG.warn("Problem Inserting the New Player '{}' in the DataBase", player.getPlayerName());
                 throw new DAODMLException("Problem Inserting a New Player: " + player.getPlayerName());
             }else{
                 resultSet = statement.getGeneratedKeys();
@@ -99,8 +103,8 @@ public class MySQLPlayerDAO implements PlayerDAO {
                 newPlayerId = resultSet.getInt(1);
             }
         } catch (SQLException throwables) {
-            //TODO: Log
-            throw new DAOException("Problem trying to Insert a Player in SQL: " + player.getPlayerName(), throwables);
+            LOG.error("Error trying to Insert the Player '{}' in the DataBase", player.getPlayerName(), throwables);
+            throw new DAOException("Problem trying to Insert a Player in the DataBase: " + player.getPlayerName(), throwables);
         }finally {
             closeResultSet(resultSet);
             closeStatement(statement);
@@ -120,11 +124,13 @@ public class MySQLPlayerDAO implements PlayerDAO {
             statement.setInt(2, player.getPlayerId());
 
             if(statement.executeUpdate() == 0){
-                //TODO: Log
-                throw new DAODMLException("Problem trying to update Player with Id " + player.getPlayerId() + " to a Game");
+                LOG.warn("Problem trying to Update the Player '{}' with the Name '{}' in the DataBase", player.getPlayerId(),
+                        player.getPlayerName());
+                throw new DAODMLException("Problem trying to update the Player with Id " + player.getPlayerId());
             }
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            LOG.error("Error trying to Update the Player '{}' in the DataBase", player.getPlayerId(), throwables);
+            throw new DAOException("Error trying to Update the Player " + player.getPlayerId() + " in the DataBase", throwables);
         }finally {
             closeStatement(statement);
         }
@@ -141,11 +147,12 @@ public class MySQLPlayerDAO implements PlayerDAO {
             statement.setInt(1, player.getPlayerId());
 
             if(statement.executeUpdate() == 0){
-                //TODO: Log
-                throw new DAODMLException("Problem trying to delete Player with Id " + player.getPlayerId() + " to a Game");
+                LOG.warn("Problem trying to Delete the Player '{}'", player.getPlayerId());
+                throw new DAODMLException("Problem trying to Delete Player with Id " + player.getPlayerId());
             }
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            LOG.error("Error trying to set as Inactive the Player '{}' in the DataBase", throwables);
+            throw new DAOException("Error trying to set as Inactive the Player " + player.getPlayerId() + " in the Database", throwables);
         }finally {
             closeStatement(statement);
         }
@@ -156,8 +163,8 @@ public class MySQLPlayerDAO implements PlayerDAO {
             try {
                 statement.close();
             } catch (SQLException throwables) {
-                //TODO: Log
-                throw new DAOException("Problem trying to close a Statement in SQL", throwables);
+                LOG.error("Error trying to Close the Statement", throwables);
+                throw new DAOException("Error trying to close the Statement", throwables);
             }
         }
     }
@@ -167,26 +174,9 @@ public class MySQLPlayerDAO implements PlayerDAO {
             try {
                 resultSet.close();
             } catch (SQLException throwables) {
-                //TODO: Log
-                throw new DAOException("Problem trying to close a ResultSet in SQL", throwables);
+                LOG.error("Error trying to Close the ResultSet", throwables);
+                throw new DAOException("Error trying to close a ResultSet", throwables);
             }
         }
     }
-
-
-    public static void main(String[] args) {
-        try {
-            MySQLPlayerDAO playerDAO = new MySQLPlayerDAO(
-                    DriverManager.getConnection("jdbc:mysql://localhost/tictactoe", "root", ""));
-            Player player = playerDAO.get(4);
-            System.out.println(player.toString());
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        } catch (DAOException e) {
-            e.printStackTrace();
-        } catch (DAODataNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
 }
