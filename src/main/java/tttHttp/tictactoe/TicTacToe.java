@@ -24,9 +24,7 @@ public class TicTacToe {
     private List<Point> winningCombination;
 
     public TicTacToe(int player1Id, Integer player2Id, boolean gameStarted, int turn, int turnCounter, boolean winner, boolean draw,
-                     boolean surrendered,
-                     int[][] board,
-                     List<Point> winningCombination) {
+                     boolean surrendered, int[][] board, List<Point> winningCombination) {
         this.player1Id = player1Id;
         this.player2Id = player2Id;
         this.gameStarted = gameStarted;
@@ -39,7 +37,6 @@ public class TicTacToe {
         this.winningCombination = winningCombination;
     }
 
-    //TODO: exceptions for TicTacToe on conditions and invalid move
     public boolean makeMove(int playerId, int tileCol, int tileRow){
         if(!hasStarted() || !checkGameConditions() || !isCorrectTurn(playerId) || !isValidMove(tileCol, tileRow)) return false;
         board[tileCol][tileRow] = turn;

@@ -1,11 +1,16 @@
 package tttHttp.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tttHttp.httpExceptions.HTTPException;
+
 import java.io.*;
 import java.util.Properties;
 
 public class ConfigurationManager {
 
     private static Properties properties = null;
+    private final Logger LOG = LoggerFactory.getLogger(ConfigurationManager.class);
 
     private ConfigurationManager() {
         properties = new Properties();
@@ -14,9 +19,11 @@ public class ConfigurationManager {
 
             properties.load(is);
         } catch (FileNotFoundException e) {
-            System.out.println("Configuration file (config.properties) not found");
+            LOG.error("Configuration File Properties Not Found", e);
+            throw new HTTPException(ExceptionsEnum.INTERNAL_SERVER_ERROR);
         } catch (IOException e) {
-            System.out.println("Error loading Configuration file" + e.getStackTrace());
+            LOG.error("I/O Exception trying to load Configuration File", e);
+            throw new HTTPException(ExceptionsEnum.INTERNAL_SERVER_ERROR);
         }
     }
 
