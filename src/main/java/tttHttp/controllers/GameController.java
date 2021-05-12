@@ -1,6 +1,8 @@
 package tttHttp.controllers;
 
 import com.mysql.cj.util.TestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tttHttp.DAO.DAOManager;
 import tttHttp.DAO.MySQL.MySQLDAOManager;
 import tttHttp.DAO.exceptions.*;
@@ -20,8 +22,7 @@ import java.util.Properties;
 
 public class GameController {
 
-    //TODO: export and upload DDBB, do the ERD. Take away the gameMoveId (not used) and put as PK col-row
-
+    private final Logger LOG = LoggerFactory.getLogger(GameController.class);
     private DAOManager daoManager;
 
     public GameController(){
@@ -36,7 +37,7 @@ public class GameController {
         try {
             daoManager = new MySQLDAOManager(host, port, database, username, password);
         } catch (ClassNotFoundException | DAOException throwables) {
-            //TODO: Log
+            LOG.error("Error connecting to the DDBB", throwables);
             throw new HTTPException(ExceptionsEnum.INTERNAL_SERVER_ERROR);
         }
     }
