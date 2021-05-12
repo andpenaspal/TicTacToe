@@ -68,7 +68,7 @@ public class GameController {
         try {
             newGameId = daoManager.getGameDAO().insertPlayerIntoGame(playerId);
         } catch (DAOException | DAODMLException e) {
-            //TODO: Log
+            LOG.error("Error trying to create/insert the Player '{}' in a Game in the DDBB", playerId, e);
             HttpExceptionManager.handleExceptions(e);
         }
 
